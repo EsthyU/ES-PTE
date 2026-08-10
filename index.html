@@ -176,6 +176,47 @@ li{margin-bottom:5px}
 .muted{color:var(--ink-2);font-size:13px}
 .tiny{font-size:12px;color:var(--ink-3)}
 .pill{display:inline-block;font-family:var(--mono);font-size:11px;background:var(--rule-2);padding:2px 7px;border-radius:2px;margin:0 3px 3px 0}
+.subnav{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--rule);padding-bottom:10px}
+.subnav button{
+  background:none;border:1px solid var(--rule);border-radius:2px;font-family:var(--sans);
+  font-size:12px;font-weight:650;color:var(--ink-2);padding:6px 10px;cursor:pointer;
+}
+.subnav button.on{background:var(--reading);border-color:var(--reading);color:#fff}
+.subnav button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.wt{display:inline-block;font-family:var(--mono);font-size:10px;background:var(--rule-2);
+  color:var(--ink-2);padding:2px 6px;border-radius:2px;margin-left:6px}
+.gap-sel{
+  font-family:var(--mono);font-size:13px;padding:2px 4px;border:none;
+  border-bottom:2px solid var(--reading);background:#F7F8F4;border-radius:0;
+  max-width:190px;width:auto;display:inline-block;
+}
+.gap-sel.right{border-bottom-color:var(--ok);background:#EFF6F0;color:var(--ok);font-weight:600}
+.gap-sel.wrong{border-bottom-color:var(--bad);background:#FBF0F0;color:var(--bad)}
+.gap-slot{
+  display:inline-block;min-width:118px;text-align:center;font-family:var(--mono);font-size:13px;
+  border-bottom:2px solid var(--reading);background:#F7F8F4;padding:2px 7px;cursor:pointer;
+}
+.gap-slot.filled{background:#EEF2E6}
+.gap-slot.right{border-bottom-color:var(--ok);background:#EFF6F0;color:var(--ok);font-weight:600}
+.gap-slot.wrong{border-bottom-color:var(--bad);background:#FBF0F0;color:var(--bad)}
+.gap-slot.active{outline:2px solid var(--ink)}
+.wordbank{background:#EDF1E4;border:1px solid #CFD9BC;border-radius:3px;padding:11px;margin:12px 0}
+.wb{
+  display:inline-block;font-family:var(--mono);font-size:13px;background:var(--surface);
+  border:1px solid var(--rule);border-radius:2px;padding:5px 10px;margin:3px;cursor:pointer;
+}
+.wb:hover{border-color:var(--ink)}
+.wb.used{opacity:.3;pointer-events:none}
+.wb.on{background:var(--reading);color:#fff;border-color:var(--reading)}
+.opt{display:flex;gap:9px;align-items:flex-start;padding:9px 11px;border:1px solid var(--rule);
+  border-radius:3px;margin-bottom:6px;cursor:pointer;font-size:14px;background:var(--surface)}
+.opt:hover{border-color:var(--ink)}
+.opt.on{border-color:var(--reading);background:#F4F7EE}
+.opt.corr{border-color:var(--ok);background:#EFF6F0}
+.opt.miss{border-color:var(--bad);background:#FBF0F0}
+.opt .box{width:15px;height:15px;flex:0 0 15px;margin-top:2px;border:1.5px solid var(--ink-3);border-radius:2px}
+.opt.on .box{background:var(--reading);border-color:var(--reading)}
+.opt .lt{font-family:var(--mono);font-weight:700;color:var(--ink-3);flex:0 0 14px}
 .reorder-item{
   background:var(--surface);border:1px solid var(--rule);border-radius:3px;
   padding:11px 13px;margin-bottom:7px;cursor:pointer;font-size:14px;display:flex;gap:11px;
@@ -228,94 +269,13 @@ hr{border:none;border-top:1px solid var(--rule);margin:26px 0}
   <p class="muted">IRCC takes your lowest skill. No averaging, no compensation. Speaking is already at ceiling &mdash; every minute spent there is a minute stolen from Reading.</p>
 </section>
 
-<!-- ===================== FIB ===================== -->
-<section class="sec" id="s-fib">
-  <div class="eyebrow"><span class="tag R">R</span><span class="tag W">W</span> Priority 1</div>
-  <h1>Fill in the Blanks</h1>
-  <p class="lede">Feeds Reading and Writing simultaneously. Your highest-leverage task. A correct word spelled wrong scores zero.</p>
-
-  <div class="card">
-    <h3 style="margin-top:0">Method</h3>
-    <ol>
-      <li>Identify the grammatical slot before the meaning. Noun, verb form, adjective, adverb.</li>
-      <li>Check for a collocation trigger. Most blanks want a fixed partner, not a synonym.</li>
-      <li>Read the full sentence back with your word in place.</li>
-      <li>Spell it, then check the spelling. Never leave a blank.</li>
-    </ol>
-  </div>
-
-  <div class="row">
-    <button class="act" onclick="fibSet('A')">Set A &middot; workplace register</button>
-    <button class="act sub" onclick="fibSet('B')">Set B &middot; word forms</button>
-    <button class="act sub" onclick="fibCheck()">Check answers</button>
-    <button class="act sub" onclick="fibSet(fibCur)">Reset</button>
-  </div>
-  <div id="fibScore"></div>
-  <div id="fibBody" style="margin-top:16px"></div>
-</section>
-
-<!-- ===================== WFD ===================== -->
-<section class="sec" id="s-wfd">
-  <div class="eyebrow"><span class="tag L">L</span><span class="tag W">W</span> Daily core</div>
-  <h1>Write from Dictation</h1>
-  <p class="lede">Per-word partial credit, and it feeds Writing. Plural <span class="num">-s</span> and past-tense <span class="num">-ed</span> are the most commonly dropped endings. Punctuation and capitals are not scored.</p>
-
-  <div class="card L">
-    <div class="row" style="margin-top:0">
-      <select id="wfdLen" style="width:auto;min-width:170px">
-        <option value="all">All 60 sentences</option>
-        <option value="short">Short &middot; 8&ndash;10 words</option>
-        <option value="med">Medium &middot; 11&ndash;13 words</option>
-        <option value="long">Long &middot; 14&ndash;17 words</option>
-      </select>
-      <button class="act" onclick="wfdSpeak()">Play sentence</button>
-      <button class="act sub" onclick="wfdSpeak()">Replay</button>
-      <button class="act sub" onclick="wfdNext()">Next</button>
-    </div>
-    <p class="tiny" style="margin-top:9px">In the exam you hear it once. Play once, type, then score.</p>
-    <textarea id="wfdIn" rows="3" placeholder="Type what you heard" style="margin-top:12px"></textarea>
-    <div class="row">
-      <button class="act" onclick="wfdScore()">Score it</button>
-      <button class="act sub" onclick="wfdReveal()">Show sentence</button>
-      <span class="num tiny" id="wfdCount"></span>
-    </div>
-    <div id="wfdOut"></div>
-  </div>
-
-  <div class="card">
-    <h3 style="margin-top:0">Running total this session</h3>
-    <p class="num" id="wfdTally">0 sentences &middot; 0% words correct</p>
-  </div>
-</section>
-
-<!-- ===================== REORDER ===================== -->
-<section class="sec" id="s-reorder">
-  <div class="eyebrow"><span class="tag R">R</span> Reading</div>
-  <h1>Re-order Paragraphs</h1>
-  <p class="lede">Partial credit for correct adjacent pairs, so locking two confident pairs beats agonising over the whole sequence. Hard cap: two minutes per item.</p>
-
-  <div class="card R">
-    <h3 style="margin-top:0">Cannot be first</h3>
-    <p class="muted">Any paragraph opening with a back-reference or connector:</p>
-    <div>
-      <span class="pill">this</span><span class="pill">these</span><span class="pill">such</span><span class="pill">it</span><span class="pill">they</span><span class="pill">the former</span><span class="pill">the latter</span><span class="pill">however</span><span class="pill">therefore</span><span class="pill">moreover</span><span class="pill">in addition</span><span class="pill">another</span><span class="pill">as a result</span><span class="pill">for example</span><span class="pill">consequently</span><span class="pill">nevertheless</span><span class="pill">by contrast</span><span class="pill">subsequently</span><span class="pill">finally</span><span class="pill">despite this</span>
-    </div>
-    <h3>Chaining signals</h3>
-    <div class="scroll"><table>
-      <tr><th>You see</th><th>It means</th></tr>
-      <tr><td>Pronoun with no antecedent in that paragraph</td><td>Antecedent is in the paragraph immediately before</td></tr>
-      <tr><td>Definite article on first mention &mdash; &ldquo;the scheme&rdquo;</td><td>The scheme was introduced earlier</td></tr>
-      <tr><td>Indefinite article &mdash; &ldquo;a new scheme&rdquo;</td><td>This is the introduction, so it comes early</td></tr>
-      <tr><td>Full name, then surname only</td><td>Full name comes first</td></tr>
-      <tr><td>A general claim</td><td>A specific example usually follows</td></tr>
-      <tr><td>A question</td><td>The answer is the next paragraph</td></tr>
-    </table></div>
-  </div>
-
-  <div class="row"><button class="act" onclick="roLoad(0)">Set 1</button><button class="act sub" onclick="roLoad(1)">Set 2</button><button class="act sub" onclick="roLoad(2)">Set 3</button></div>
-  <p class="tiny" style="margin-top:10px">Click paragraphs in the order you think they belong.</p>
-  <div id="roBody" style="margin-top:10px"></div>
-  <div id="roOut"></div>
+<!-- ===================== READING ===================== -->
+<section class="sec" id="s-reading">
+  <div class="eyebrow"><span class="tag R">R</span> 50% of your study time &middot; gap +8</div>
+  <h1>Reading</h1>
+  <p class="lede">Five task types, roughly 30 minutes. Two of them carry 45% of the section between them.</p>
+  <div class="subnav" id="rdNav"></div>
+  <div id="rdBody" style="margin-top:18px"></div>
 </section>
 
 <!-- ===================== EMAIL ===================== -->
@@ -732,7 +692,7 @@ const PLAN=[
  mocks:"",mile:""}];
 
 /* ============ nav ============ */
-const TABS=[["today","Today"],["fib","Fill in the Blanks"],["wfd","Dictation"],["reorder","Re-order"],["email","Write Email"],["sum","Summaries"],["ref","Reference"],["plan","Plan"],["log","Log"]];
+const TABS=[["today","Today"],["reading","Reading"],["wfd","Dictation"],["email","Write Email"],["sum","Summaries"],["ref","Reference"],["plan","Plan"],["log","Log"]];
 document.getElementById('nav').innerHTML = TABS.map((t,i)=>
   `<button class="${i===0?'on':''}" onclick="go('${t[0]}',this)">${t[1]}</button>`).join('');
 function go(id,btn){
@@ -788,33 +748,6 @@ async function coreTick(key,id,el){
 }
 
 /* ============ FIB ============ */
-let fibCur='A';
-function fibSet(k){
-  fibCur=k;
-  document.getElementById('fibScore').innerHTML='';
-  document.getElementById('fibBody').innerHTML = FIB[k].map((q,i)=>{
-    const parts=q[0].split('___');
-    return `<div class="q"><span class="qn">${String(i+1).padStart(2,'0')}</span>${parts[0]}<input type="text" class="blank" id="fib${i}" autocomplete="off">${parts[1]||''}<div class="ans" id="fiba${i}"></div></div>`;
-  }).join('');
-}
-function fibCheck(){
-  const set=FIB[fibCur]; let ok=0;
-  set.forEach((q,i)=>{
-    const el=document.getElementById('fib'+i);
-    const v=el.value.trim().toLowerCase();
-    const hit=q[1].some(a=>a.toLowerCase()===v);
-    el.className='blank '+(hit?'right':'wrong');
-    if(hit) ok++;
-    const a=document.getElementById('fiba'+i);
-    a.className='ans show';
-    a.textContent = hit ? '✓' : '→ '+q[1].join(' / ');
-  });
-  const pct=Math.round(ok/set.length*100);
-  const cls = pct>=80?'good':(pct>=60?'mid':'poor');
-  document.getElementById('fibScore').innerHTML =
-    `<div class="score ${cls}">${ok} of ${set.length} &middot; ${pct}%${pct<80?' — log every miss to the collocation bank':''}</div>`;
-}
-
 /* ============ WFD ============ */
 let wfdS='', wfdDone=0, wfdPts=0, wfdTot=0;
 function wfdPool(){
@@ -871,44 +804,6 @@ document.getElementById('wfdIn').addEventListener('input',e=>{
 });
 
 /* ============ reorder ============ */
-let roSet=0, roPick=[];
-function roLoad(i){
-  roSet=i; roPick=[];
-  document.getElementById('roOut').innerHTML='';
-  roDraw();
-}
-function roDraw(){
-  const s=REORDER[roSet];
-  document.getElementById('roBody').innerHTML = s.items.map((t,i)=>{
-    const p=roPick.indexOf(i);
-    return `<div class="reorder-item ${p>=0?'picked':''}" onclick="roTap(${i})">
-      <span class="pos">${p>=0?p+1:'·'}</span><span>${t}</span></div>`;
-  }).join('') + `<div class="row"><button class="act" onclick="roCheck()">Check order</button>
-    <button class="act sub" onclick="roLoad(${roSet})">Clear</button></div>`;
-}
-function roTap(i){
-  const p=roPick.indexOf(i);
-  if(p>=0) roPick.splice(p,1); else roPick.push(i);
-  roDraw();
-}
-function roCheck(){
-  const s=REORDER[roSet];
-  if(roPick.length!==s.items.length){
-    document.getElementById('roOut').innerHTML='<div class="score mid">Select all four paragraphs in order first.</div>';
-    return;
-  }
-  let pairs=0;
-  for(let i=0;i<s.order.length-1;i++){
-    const a=roPick.indexOf(s.order[i]), b=roPick.indexOf(s.order[i+1]);
-    if(b===a+1) pairs++;
-  }
-  const exact = roPick.join()===s.order.join();
-  const cls = exact?'good':(pairs>=2?'mid':'poor');
-  document.getElementById('roOut').innerHTML =
-    `<div class="score ${cls}">${pairs} of 3 adjacent pairs correct${exact?' · full sequence':''}</div>
-     <div class="card" style="margin-top:10px"><h3 style="margin-top:0">Why</h3><p style="margin-bottom:0">${s.why}</p></div>`;
-}
-
 /* ============ email ============ */
 let emT=null, emLeft=540;
 function emTick(){
@@ -1081,7 +976,505 @@ async function drawErrors(){
     '</table></div>' : '<p class="muted">No entries yet.</p>';
 }
 
+
+/* ================= READING MODULE ================= */
+
+const RWFIB=[
+{t:"Hybrid working policy",
+ p:"Employers across Europe have been {0} to adapt their policies since hybrid working became permanent. Many organisations now {1} a formal framework setting out how many days staff are expected to attend the office, although enforcement {2} considerably between sectors. Where attendance is monitored, compliance tends to be high; where it is left to individual discretion, it tends to {3} over time. The most effective policies appear to be those that link office days to a clear purpose, such as team planning or client meetings, rather than {4} a fixed number of days for its own sake.",
+ b:[{o:["requested","required","reminded","recommended"],a:1,w:"Passive + infinitive: 'been required to adapt'. Requested and recommended do not take this passive pattern naturally here."},
+    {o:["operate","perform","exercise","conduct"],a:0,w:"Collocation: you operate a framework. Conduct takes research or a survey."},
+    {o:["alters","varies","exchanges","converts"],a:1,w:"'Enforcement varies between sectors' is the fixed pairing. Alters needs an object."},
+    {o:["decline","deduct","degrade","deflect"],a:0,w:"Attendance declines. The other three are transitive or belong to different registers."},
+    {o:["mandating","commanding","ordering","dictating"],a:0,w:"You mandate a number of days. Commanding and ordering take a person as object."}]},
+{t:"Consumer refunds",
+ p:"Under consumer law in most European countries, shoppers are {0} to a full refund if goods are faulty, provided the fault is reported within a reasonable period. Retailers frequently {1} that the customer must produce the original receipt, but a bank statement or card record is generally {2} as proof of purchase. Disputes most often {3} where the retailer claims the damage was caused by misuse. In such cases the burden of proof sits with the seller during the first six months, after which it {4} to the buyer.",
+ b:[{o:["allowed","permitted","entitled","qualified"],a:2,w:"Entitled to a refund. Allowed and permitted take an infinitive, not 'to a refund'."},
+    {o:["insist","persist","consist","resist"],a:0,w:"Insist that. Persist takes 'in', consist takes 'of'."},
+    {o:["admitted","accepted","adopted","adapted"],a:1,w:"Accepted as proof. Admitted means confessed; adopted means taken up as policy."},
+    {o:["arise","raise","rise","arouse"],a:0,w:"Disputes arise. Raise and arouse are transitive; rise is about level, not occurrence."},
+    {o:["delivers","submits","passes","forwards"],a:2,w:"The burden passes to the buyer. The others all need a direct object."}]},
+{t:"Volunteer recruitment",
+ p:"Charities report growing difficulty in {0} volunteers under the age of thirty. The problem is not a lack of goodwill: surveys consistently find that younger people express high levels of {1} in volunteering. What deters them is the expectation of a regular weekly commitment, which sits awkwardly with irregular working hours. Organisations that have {2} short, flexible opportunities have seen sign-up rates improve markedly. One national charity {3} its intake by more than half simply by allowing volunteers to book individual shifts online rather than {4} to a fixed rota.",
+ b:[{o:["recruiting","employing","hiring","appointing"],a:0,w:"Volunteers are recruited, not employed or hired. Those imply payment."},
+    {o:["attention","interest","curiosity","attraction"],a:1,w:"Interest in something. Attention takes 'to', curiosity takes 'about'."},
+    {o:["presented","exposed","introduced","revealed"],a:2,w:"Introduce an opportunity. Revealed and exposed imply something previously hidden."},
+    {o:["increased","enlarged","expanded","extended"],a:0,w:"Increase a number. Enlarge is about physical size, extend about duration or reach."},
+    {o:["committing","promising","pledging","devoting"],a:0,w:"Commit to a rota. The parallel structure after 'rather than' requires the -ing form and this preposition."}]},
+{t:"Workplace lighting",
+ p:"The design of workplace lighting has a measurable {0} on both productivity and reported wellbeing. Offices lit predominantly by overhead fluorescent panels tend to {1} complaints of eye strain, particularly among staff working at screens for long periods. Access to daylight appears to be the single most important {2}, though it is the hardest to change in an existing building. Where windows are limited, employers can {3} some of the benefit by installing adjustable task lighting and letting staff control levels at their own desks. Such measures are inexpensive and in most cases {4} their cost within a year through reduced absence.",
+ b:[{o:["affect","effect","impression","outcome"],a:1,w:"Effect is the noun, affect the verb. This is the single most common word-class trap in the task."},
+    {o:["attract","gather","collect","receive"],a:0,w:"Attract complaints is the fixed pairing."},
+    {o:["factor","section","portion","division"],a:0,w:"The most important factor. The other three are about parts of a whole."},
+    {o:["fasten","secure","ensure","confirm"],a:1,w:"Secure a benefit. Ensure needs a clause; confirm needs something already claimed."},
+    {o:["recoup","retract","refund","reimburse"],a:0,w:"Measures recoup their cost. Refund and reimburse need a person as the recipient."}]},
+{t:"Rail punctuality figures",
+ p:"Train operators publish punctuality figures monthly, but the headline number can be {0}. A service counted as on time may have arrived up to five minutes late, a {1} that conceals considerable variation. Passengers making a single direct journey are largely unaffected by small delays; those {2} on a connection are not. Consumer groups have therefore {3} for figures to be reported by journey rather than by service. Operators resist this on the grounds that connection data is difficult to collect, though critics {4} that the reluctance has more to do with how the resulting figures would look.",
+ b:[{o:["mistaken","misplaced","misleading","mistimed"],a:2,w:"A number can be misleading. Mistaken describes a person or belief."},
+    {o:["doorway","threshold","entrance","opening"],a:1,w:"Threshold in its abstract sense: a cut-off point. The others are all physical."},
+    {o:["relying","leaning","resting","standing"],a:0,w:"Rely on a connection. Leaning and resting are literal."},
+    {o:["spoken","called","argued","voted"],a:1,w:"Called for. Argued and voted take 'that' or 'for' with different structures."},
+    {o:["doubt","wonder","suspect","question"],a:2,w:"Suspect that. Doubt that reverses the meaning; wonder introduces uncertainty, not an accusation."}]},
+{t:"Recycling contamination",
+ p:"Councils are struggling with contamination in household recycling, a problem that has {0} sharply since the introduction of mixed collections. When a single bin contains food residue or non-recyclable plastic, the entire load can be {1}, and in some cases a whole lorry is diverted to landfill. Residents are rarely acting in bad faith; the rules {2} from one authority to the next, and packaging labels are often ambiguous. Several councils have {3} to clearer pictorial guidance printed directly on the bin lid, with encouraging results. Others now {4} feedback stickers to bins that have been incorrectly filled.",
+ b:[{o:["worsened","weakened","lowered","declined"],a:0,w:"A problem worsens. Declined and lowered would reverse the meaning."},
+    {o:["refused","rejected","denied","declined"],a:1,w:"A load is rejected. Refused and denied normally take a person or a request."},
+    {o:["distinguish","separate","differ","divide"],a:2,w:"Rules differ from one place to another. The others are transitive."},
+    {o:["moved","turned","changed","shifted"],a:1,w:"Turn to something. Move and shift need 'towards'; change needs 'to' with a different sense."},
+    {o:["connect","attach","join","link"],a:1,w:"Attach a sticker to a bin. Link and connect imply a relationship, not physical fixing."}]}];
+
+const RFIB=[
+{t:"The public library",
+ p:"The role of the public library has {0} considerably over two decades. Book lending remains important, but many branches now {1} free internet access, study space and community meetings, and for some residents these are the {2} reason for visiting. Funding has not kept {3} with this broader remit. Several authorities have responded by reducing opening {4} rather than closing buildings outright.",
+ a:["changed","provide","principal","pace","hours"],
+ d:["raised","principle","spent"],
+ w:"Principle and principal is the trap: principal means main, principle means a rule. 'Kept pace with' is a fixed phrase."},
+{t:"Coastal erosion",
+ p:"Erosion along the eastern shoreline has {0} in recent years, forcing difficult decisions on local authorities. Hard defences such as sea walls are effective but expensive, and they frequently {1} the problem further along the coast. A growing number of councils have therefore {2} a policy of managed retreat, in which low-value land is allowed to flood while resources are {3} on protecting settlements. The approach is unpopular with affected landowners, who argue that compensation arrangements remain {4}.",
+ a:["accelerated","worsen","adopted","concentrated","inadequate"],
+ d:["adapted","worsened","condensed"],
+ w:"Adopted and adapted differ by one letter and by meaning entirely. After 'frequently' you need the bare form worsen, not worsened."},
+{t:"Apprenticeships",
+ p:"Employers have long {0} that school leavers arrive without the practical skills the workplace requires. Apprenticeship schemes are intended to {1} this gap, combining paid employment with structured training. Take-up remains {2} in some sectors, partly because smaller firms lack the administrative capacity to run a scheme. Recent reforms have {3} the paperwork required and introduced a shared levy to fund training. Early indications {4} that the changes are having a modest effect.",
+ a:["complained","bridge","low","reduced","suggest"],
+ d:["complimented","broaden","lowered"],
+ w:"Complained and complimented are near-homophones with opposite meanings. You bridge a gap; you broaden a scope."},
+{t:"Shift work and sleep",
+ p:"Workers on rotating shifts face a {0} that is difficult to resolve. The body clock adjusts slowly, and a pattern that changes every few days leaves little {1} for adjustment at all. Studies have consistently {2} elevated rates of fatigue, digestive complaints and error among night workers. Employers can {3} some of the risk by rotating shifts forwards rather than backwards and allowing longer recovery periods, though neither measure {4} the underlying problem.",
+ a:["dilemma","opportunity","documented","reduce","eliminates"],
+ d:["solution","reduced","illuminates"],
+ w:"Documented and illuminated both take evidence as an object but only one means recorded. 'Neither measure' is singular, so the verb takes -s."},
+{t:"Free museum admission",
+ p:"When several national museums {0} free admission two decades ago, visitor numbers rose sharply. Critics predicted the policy would prove {1}, since the lost income would have to be met elsewhere. In practice, secondary spending in cafés, shops and paid exhibitions {2} much of the shortfall. The composition of the audience changed less than {3}. Free entry brought existing visitors more often rather than {4} entirely new ones.",
+ a:["introduced","unsustainable","offset","expected","attracting"],
+ d:["produced","unsuitable","offered"],
+ w:"Unsustainable and unsuitable are close in form and far apart in meaning. After 'rather than' the parallel -ing form is required."},
+{t:"Video consultations",
+ p:"Video consultations became {0} during the pandemic and have remained widespread since. For routine follow-ups they are efficient and popular, sparing patients a journey and {1} clinic time. Their limitations become {2} with unfamiliar patients presenting new symptoms, where physical examination often {3} the diagnosis. Most health systems have settled on a mixed model, {4} remote appointments to circumstances where they are clinically appropriate.",
+ a:["routine","freeing","apparent","determines","restricting"],
+ d:["routinely","freezing","apparently"],
+ w:"Three of the distractors are the wrong word class of the right word. Check the slot before the meaning and all three disappear."}];
+
+const MCQM=[
+{t:"Household food waste",
+ p:"A three-year study of household food waste collection across twelve local authorities found participation varying from 14 to 68 per cent. The strongest predictor was not environmental attitude, which was broadly similar across all areas, but the practical design of the scheme. Weekly collection, free compostable liners and a caddy small enough for a kitchen worktop each independently raised participation. Charging for liners produced the sharpest single fall recorded. Publicity campaigns, by contrast, showed no measurable effect once scheme design was controlled for. The authors caution that their sample excluded rural authorities, where collection logistics differ substantially, and that self-reported participation may overstate actual behaviour.",
+ q:"Which of the following are supported by the passage?",
+ o:["Environmental attitude differed little between high and low participation areas.",
+    "Publicity campaigns raised participation independently of scheme design.",
+    "Charging for liners was associated with a marked drop in participation.",
+    "The study covered both urban and rural authorities.",
+    "The authors acknowledge a limitation in how participation was measured."],
+ a:[0,2,4],
+ w:"B reverses the finding about publicity. D contradicts the stated exclusion of rural authorities. The three correct options each map to an explicit sentence."},
+{t:"Antibiotic resistance",
+ p:"Antibiotic resistance is frequently framed as a looming crisis, though it already accounts for an estimated 1.2 million deaths annually. What distinguishes it from most public health problems is the structure of incentives. A clinician facing diagnostic uncertainty finds prescribing the cautious option. A livestock producer finds routine use reduces losses. A manufacturer finds the commercially rational drug is one that will be widely sold, which is precisely what an ideal new antibiotic should not be. None of these actors is behaving irresponsibly by the standards of their own position. Policy responses relying on appeals to individual restraint have made limited progress, and attention has shifted towards altering the incentives themselves.",
+ q:"Which statements reflect the passage?",
+ o:["Antibiotic resistance is already causing substantial mortality.",
+    "The individuals involved are behaving irrationally.",
+    "Commercial incentives discourage the development of ideal new antibiotics.",
+    "Appeals to individual responsibility have proved largely ineffective.",
+    "The author identifies clinicians as the primary cause."],
+ a:[0,2,3],
+ w:"B and E are both close-but-wrong. The passage says the opposite of B and never singles out clinicians. Options that sharpen a passage into blame are usually distractors."},
+{t:"Road widening",
+ p:"Transport research has repeatedly found that widening a congested road produces only temporary relief. Within roughly five years, congestion typically returns to something close to its previous level. The mechanism, known as induced demand, is straightforward: when a route becomes faster, journeys that were previously suppressed reappear. People travel at times they had avoided, take routes they had abandoned, or make trips they had not made at all. This does not mean the investment achieves nothing, since additional journeys carry genuine economic value. It does mean that the usual justification for such schemes, reducing the time an individual driver spends in traffic, is not supported by the evidence.",
+ q:"Which of the following can be concluded from the passage?",
+ o:["Road widening produces no benefits of any kind.",
+    "Congestion relief from widening tends to be temporary.",
+    "Induced demand describes previously suppressed journeys reappearing.",
+    "The stated justification for widening schemes is not borne out.",
+    "Journey times fall permanently for individual drivers."],
+ a:[1,2,3],
+ w:"A overstates: the passage explicitly grants economic value. E contradicts the whole argument. Watch for absolutes like 'no benefits of any kind'."},
+{t:"Learning styles",
+ p:"The belief that people learn best when material matches their preferred style, whether visual, auditory or kinaesthetic, is among the most widely held ideas in education. It has almost no experimental support. The decisive test is simple: teach matched and mismatched groups the same content and compare outcomes. Dozens of studies have used this design and matched groups do not outperform mismatched ones. What does affect outcomes is whether the format suits the material. Diagrams work better for spatial relationships regardless of who is looking at them. The idea's persistence probably reflects how intuitively appealing it is rather than any evidential basis.",
+ q:"Which statements are consistent with the passage?",
+ o:["The matched-versus-mismatched design is presented as the critical test.",
+    "Format matters, but in relation to the material rather than the learner.",
+    "The theory is supported by a small number of well-designed studies.",
+    "The idea remains popular partly because it feels plausible.",
+    "Diagrams are more effective only for visual learners."],
+ a:[0,1,3],
+ w:"C and E both smuggle the discredited theory back in. E in particular is the exact claim the passage rejects, restated as if it were a finding."},
+{t:"Remote working",
+ p:"Five years after the shift began, a substantial share of office-based staff in Western Europe still work from home at least part of the week. Productivity measured as output per worker has generally held steady in roles with clearly defined deliverables. The persistent difficulty is informal knowledge transfer, the kind that used to happen in corridors, and it affects junior staff disproportionately. Employees onboarded remotely take longer to reach full effectiveness and report weaker organisational attachment. Most large firms have settled on a hybrid compromise of two or three fixed office days, an arrangement that satisfies few people fully and that researchers note often produces individual work done in a noisier environment.",
+ q:"Which of the following does the passage support?",
+ o:["Measured productivity has broadly held up in well-defined roles.",
+    "Junior staff are disproportionately affected by weakened informal learning.",
+    "Hybrid arrangements have resolved the difficulties on both sides.",
+    "Mandated office days do not reliably produce collaborative work.",
+    "Remote onboarding accelerates the time to full effectiveness."],
+ a:[0,1,3],
+ w:"E reverses a stated finding. C is the sort of tidy resolution passages rarely offer, and the text says the opposite. When an option resolves a tension neatly, check the text before selecting."},
+{t:"Punctuality reporting",
+ p:"Operators publish punctuality data monthly, but the headline figure rests on a threshold that hides a good deal. A train counted as on time may have arrived up to five minutes late. For a passenger making one direct journey this rarely matters. For a passenger depending on a connection it can mean an hour's wait. Consumer groups have pressed for reporting by journey rather than by service, which would capture missed connections. Operators object that the necessary data is hard to assemble. Critics counter that the reluctance owes more to the likely appearance of the resulting figures than to any technical obstacle.",
+ q:"Which points are made in the passage?",
+ o:["The on-time threshold conceals variation in actual arrival times.",
+    "Passengers with connections are more exposed to small delays.",
+    "Operators have agreed to move to journey-based reporting.",
+    "Critics question the sincerity of the operators' stated objection.",
+    "Journey-based reporting would capture missed connections."],
+ a:[0,1,3,4],
+ w:"Four correct here. Do not assume the answer count is always two or three. Count what the text actually supports rather than what the format leads you to expect."}];
+
+const MCQS=[
+{p:"A council that switched from providing free compostable liners to charging fifty pence per roll recorded a fall in food waste participation of roughly one third within four months. Surveys carried out before and after found no change in residents' stated concern about waste.",
+ q:"What does the evidence most strongly suggest?",
+ o:["Residents became less concerned about environmental issues.","A small practical cost had a disproportionate effect on behaviour.","Compostable liners are essential to composting.","Publicity had been the main driver of participation."],
+ a:1,w:"The survey result rules out A. C and D are not addressed. The answer is the inference the two facts jointly support."},
+{p:"Applicants who do not receive a response within fourteen days should assume their application has been unsuccessful. The panel regrets that it cannot provide individual feedback owing to the volume of applications received.",
+ q:"What can an applicant conclude after twenty days of silence?",
+ o:["The panel has not yet reviewed the application.","Feedback will follow separately.","The application has not been successful.","The application was received late."],
+ a:2,w:"The notice defines silence as a rejection. Options A and B contradict the stated policy directly."},
+{p:"Hard sea defences protect the stretch of coast on which they are built, but by interrupting the natural movement of sediment they frequently accelerate erosion further along the shoreline.",
+ q:"What is the main point?",
+ o:["Sea defences are ineffective.","Sea defences can shift the problem rather than remove it.","Sediment movement is poorly understood.","Erosion is inevitable everywhere."],
+ a:1,w:"A overstates: the passage says they do protect where built. B captures the 'but' clause, which is where the main point of a two-clause sentence usually sits."},
+{p:"The four-day week pilot involving 61 UK companies reported that 92 per cent continued the arrangement afterwards. Participating firms were self-selected and drawn disproportionately from knowledge-based sectors, with manufacturing and healthcare barely represented.",
+ q:"What limitation does the passage identify?",
+ o:["The trial period was too short.","The results were not independently verified.","The sample was not representative of the wider economy.","Revenue data was unavailable."],
+ a:2,w:"Self-selection plus sectoral skew is a representativeness problem. The other three are plausible criticisms of such a study but are not the one stated."},
+{p:"Video consultations spare patients a journey and free clinic time, and for routine follow-ups they are both efficient and popular. Their limitations appear with unfamiliar patients presenting new symptoms, where physical examination often determines the diagnosis.",
+ q:"When are video consultations least suitable?",
+ o:["When the patient is well known to the clinician.","When the appointment is a routine follow-up.","When a new symptom requires physical examination.","When clinic time is under pressure."],
+ a:2,w:"The final sentence names the exact circumstance. Options A and B describe when they work well, which is the mirror image of the question."},
+{p:"Charities report that younger people express high levels of interest in volunteering. What deters them is not indifference but the expectation of a fixed weekly commitment, which sits badly with irregular working hours.",
+ q:"What is the barrier identified?",
+ o:["Lack of interest among younger people.","The rigidity of the time commitment expected.","Insufficient publicity from charities.","Competition from paid work."],
+ a:1,w:"The passage explicitly rules out A with 'not indifference'. When a text names and rejects a candidate explanation, that candidate will appear as a distractor."},
+{p:"Offices lit chiefly by overhead fluorescent panels attract more complaints of eye strain among screen workers. Access to daylight is the single most important factor, though it is the hardest to alter in an existing building. Adjustable task lighting under the user's own control recovers part of the benefit at modest cost.",
+ q:"What does the passage suggest about task lighting?",
+ o:["It is superior to daylight.","It is a partial substitute where daylight is limited.","It eliminates eye strain entirely.","It is expensive to install."],
+ a:1,w:"'Recovers part of the benefit' is a hedge. Options A and C both remove the hedge, which is the standard way a distractor is built here."},
+{p:"Under consumer law the burden of proof sits with the seller for the first six months after purchase. After that period it passes to the buyer, who must show that the fault was present at the point of sale.",
+ q:"Who must prove the fault existed at purchase, eight months after the sale?",
+ o:["The seller.","The buyer.","Neither party.","A trading standards officer."],
+ a:1,w:"Eight months is past the six-month threshold, so the burden has passed. The task is arithmetic as much as reading. Check the number against the stated boundary."}];
+
+REORDER.push(
+{items:["This has prompted several universities to review how they assess written coursework.",
+ "Detection software has proved unreliable, frequently flagging work by non-native speakers as machine-generated.",
+ "Generative writing tools became widely available to students during 2023.",
+ "Some departments have responded by returning to supervised, in-person assessment for core modules."],
+ order:[2,0,1,3],
+ why:"C introduces the development with no back-reference. A opens with 'This has prompted', pointing back to it. B explains why the obvious fix failed. D gives the alternative response, signalled by 'Some departments have responded'."},
+{items:["The scheme was suspended after eighteen months following a critical audit.",
+ "Participants received a monthly payment with no conditions attached to how it was spent.",
+ "A pilot basic income programme ran in two mid-sized cities between 2021 and 2022.",
+ "Early findings showed improvements in reported wellbeing but no measurable change in employment."],
+ order:[2,1,3,0],
+ why:"C sets up the programme with an indefinite article. B describes the mechanism. D reports findings. A gives the outcome and uses 'The scheme', a definite reference that requires the scheme to have been introduced already."},
+{items:["Manufacturers argue that the cost of compliance would fall disproportionately on smaller firms.",
+ "The regulations require all commercial premises above a certain size to report energy use annually.",
+ "Ministers have indicated that a threshold exemption is under consideration.",
+ "Environmental groups counter that voluntary reporting has consistently failed to produce reliable data."],
+ order:[1,0,3,2],
+ why:"B states the regulation. A gives the first objection. D opens with 'counter', which requires a preceding argument. C reports the response to the dispute and closes."},
+{items:["Attendance recovered to roughly eighty per cent of its previous level within two years.",
+ "Cinema admissions fell sharply during the closures of 2020 and 2021.",
+ "The shortfall has been concentrated almost entirely in mid-budget dramas and comedies.",
+ "Large-format releases now account for a greater share of ticket sales than at any point previously."],
+ order:[1,0,2,3],
+ why:"B establishes the fall. A gives the recovery. C narrows to where the remaining gap sits. D draws the consequence. Chronology plus general-to-specific."},
+{items:["Its supporters point out that the five-day week is itself a historical artefact rather than a natural law.",
+ "Critics note that participating firms were self-selected and drawn mainly from knowledge sectors.",
+ "A coordinated trial of the four-day week involved 61 UK companies in 2022.",
+ "Ninety-two per cent chose to continue the arrangement after the trial concluded."],
+ order:[2,3,1,0],
+ why:"C introduces with a full noun phrase. D gives the headline result. B raises the objection. A opens with 'Its supporters', which needs an antecedent, and delivers the rebuttal."});
+
+/* ---------- reading engine ---------- */
+const RD_TABS=[["guide","Examiner guide"],["rw","Dropdown FIB",25],["wb","Word-bank FIB",20],["ro","Re-order"],["mm","MCQ multiple"],["ms","MCQ single"],["warm","Sentence warm-up"]];
+let rdCur="guide";
+function rdNav(){
+  document.getElementById("rdNav").innerHTML = RD_TABS.map(t=>
+    `<button class="${rdCur===t[0]?'on':''}" onclick="rdGo('${t[0]}')">${t[1]}${t[2]?`<span class="wt">${t[2]}%</span>`:''}</button>`).join("");
+}
+function rdGo(k){ rdCur=k; rdNav(); ({guide:rdGuide,rw:()=>rwLoad(0),wb:()=>wbLoad(0),ro:()=>roLoad(0),mm:()=>mmLoad(0),ms:msLoad,warm:()=>fibSet("A")})[k](); }
+function picker(n,fn,cur){
+  return `<div class="row" style="margin-top:0">`+Array.from({length:n},(_,i)=>
+    `<button class="act ${i===cur?'':'sub'}" onclick="${fn}(${i})">${i+1}</button>`).join("")+`</div>`;
+}
+
+/* ----- examiner guide ----- */
+function rdGuide(){
+  document.getElementById("rdBody").innerHTML=`
+  <div class="card R"><h3 style="margin-top:0">What the section is</h3>
+  <div class="scroll"><table>
+  <tr><th>Task</th><th>Format</th><th>Feeds</th><th>Share of Reading</th><th>Marking</th></tr>
+  <tr class="hi"><td>Reading &amp; Writing: Fill in the Blanks</td><td>Passage, a dropdown at each blank</td><td>R + W</td><td class="n">~25%</td><td>1 per blank, no penalty</td></tr>
+  <tr class="hi"><td>Reading: Fill in the Blanks</td><td>Passage, one shared word bank, drag</td><td>R only</td><td class="n">~20%</td><td>1 per blank, no penalty</td></tr>
+  <tr><td>Re-order Paragraphs</td><td>Jumbled boxes</td><td>R only</td><td class="n">~20%</td><td>1 per correct adjacent pair</td></tr>
+  <tr><td>MCQ, multiple answers</td><td>Passage + question</td><td>R only</td><td class="n">~17%</td><td><b>Negative</b>: wrong cancels right</td></tr>
+  <tr><td>MCQ, single answer</td><td>Passage + question</td><td>R only</td><td class="n">~18%</td><td>1 or 0, no penalty</td></tr>
+  </table></div>
+  <p class="tiny" style="margin-bottom:0">Shares are widely reported figures, not published Pearson weights. Treat them as directional. What is certain: the two Fill in the Blanks tasks together carry close to half the section, and only one task type penalises guessing.</p></div>
+
+  <div class="card"><h3 style="margin-top:0">Correction to your notes</h3>
+  <p style="margin-bottom:0">Neither Fill in the Blanks task involves typing, so spelling is not scored in either. Earlier versions of your study documents said otherwise. Typed spelling matters in Write from Dictation and in Listening: Fill in the Blanks only.</p></div>
+
+  <h2>Getting the full mark on each task</h2>
+
+  <div class="card R"><h3 style="margin-top:0">Dropdown FIB <span class="wt">25%</span></h3>
+  <p>Each blank has its own four options, and they are deliberately close. The discrimination is almost never meaning alone.</p>
+  <ol>
+  <li><b>Read the whole passage first.</b> Later sentences frequently settle earlier blanks.</li>
+  <li><b>Name the slot.</b> Noun, verb form, adjective, adverb. Roughly half of all wrong answers are the right idea in the wrong word class.</li>
+  <li><b>Test for the fixed partner.</b> If two options both mean roughly the right thing, one of them will be the one that collocates. Conduct research, not do research. Meet a deadline, not reach a deadline.</li>
+  <li><b>Check the preposition that follows.</b> Options are often separated by nothing else: insist <i>that</i>, consist <i>of</i>, persist <i>in</i>.</li>
+  <li><b>Read the sentence back with your choice in place.</b> If it is slightly off, it is wrong.</li>
+  <li><b>Never leave a blank.</b> No penalty. A blank and a wrong answer score identically.</li>
+  </ol>
+  <p class="tiny" style="margin-bottom:0">Time: 1.5 to 2 minutes per passage.</p></div>
+
+  <div class="card R"><h3 style="margin-top:0">Word-bank FIB <span class="wt">20%</span></h3>
+  <p>One shared bank for all blanks, and it always holds more words than there are gaps. The extras are built to look plausible.</p>
+  <ol>
+  <li><b>Sort the bank by word class before you place anything.</b> Verbs here, nouns there. Most gaps are then decided before you have thought about meaning.</li>
+  <li><b>Place your certainties first.</b> Each placement removes a word and narrows every remaining gap.</li>
+  <li><b>Name each distractor as you reject it.</b> Distractors are usually the wrong form of a right word (routine / routinely) or a near-homophone with a different meaning (principal / principle, complained / complimented).</li>
+  <li><b>Fill every gap.</b> No penalty, and an unused word tells you a placement is wrong.</li>
+  <li><b>Re-read the whole passage before moving on.</b> Twenty seconds. It catches the single swap that lifts a partial score.</li>
+  </ol>
+  <p class="tiny" style="margin-bottom:0">Time: 1.5 minutes per passage.</p></div>
+
+  <div class="card R"><h3 style="margin-top:0">Re-order Paragraphs <span class="wt">20%</span></h3>
+  <p>Marked on adjacent pairs, not on the whole sequence, so two confident pairs beat a perfect answer you never reach.</p>
+  <ol>
+  <li><b>Find the opener.</b> It carries full noun phrases, an indefinite article on first mention, and no connector.</li>
+  <li><b>Chain by reference.</b> Any paragraph opening with this, these, such, it, they, however, therefore, another, or as a result cannot be first and must follow whatever it refers to.</li>
+  <li><b>Use article shift.</b> "A new scheme" precedes "the scheme". Full name precedes surname alone.</li>
+  <li><b>Use shape.</b> The common pattern is announcement, detail, justification, criticism. Or chronology. Or general claim then specific example.</li>
+  <li><b>Two minutes, hard cap.</b> Lock the pairs you are sure of and move on.</li>
+  </ol></div>
+
+  <div class="card R"><h3 style="margin-top:0">MCQ, multiple answers <span class="wt">17%</span> &mdash; the only Reading task that punishes you</h3>
+  <p>A wrong selection cancels a correct one. This is where a strong reader loses points to optimism.</p>
+  <ol>
+  <li><b>Select only what you can put a finger on.</b> If you cannot locate the sentence, do not select it.</li>
+  <li><b>Two confident selections beat four hopeful ones.</b> On a coin-flip the expected value is negative.</li>
+  <li><b>Distractor patterns to recognise:</b> the overstatement that strips a hedge ("part of the benefit" becomes "eliminates"); the reversal of a stated finding; the claim the passage names and then rejects; the tidy resolution the text never offers; and the true statement that does not answer the question asked.</li>
+  <li><b>Do not assume a fixed number of answers.</b> It can be two, three or four.</li>
+  </ol></div>
+
+  <div class="card R"><h3 style="margin-top:0">MCQ, single answer <span class="wt">18%</span></h3>
+  <p>No penalty, so always answer even on a pure guess.</p>
+  <ol>
+  <li><b>Eliminate absolutes.</b> All, never, only, entirely, none. Rarely correct unless the passage is equally absolute.</li>
+  <li><b>Eliminate true-but-irrelevant.</b> The commonest trap is an option that is accurate and does not answer the question.</li>
+  <li><b>Distrust lifted vocabulary.</b> The correct answer is usually paraphrased; the distractor often reuses the passage's own words.</li>
+  <li><b>In a two-clause sentence the point usually sits after the "but".</b></li>
+  </ol></div>
+
+  <div class="card"><h3 style="margin-top:0">Section time budget &mdash; 30 minutes</h3>
+  <div class="scroll"><table>
+  <tr><th>Task</th><th>Items</th><th>Each</th><th>Total</th></tr>
+  <tr><td>Dropdown FIB</td><td class="n">5&ndash;6</td><td class="n">1.5&ndash;2 min</td><td class="n">9&ndash;11</td></tr>
+  <tr><td>MCQ multiple</td><td class="n">1&ndash;2</td><td class="n">2 min</td><td class="n">3&ndash;4</td></tr>
+  <tr><td>Re-order</td><td class="n">2&ndash;3</td><td class="n">2 min cap</td><td class="n">4&ndash;6</td></tr>
+  <tr><td>Word-bank FIB</td><td class="n">4&ndash;5</td><td class="n">1.5 min</td><td class="n">6&ndash;7</td></tr>
+  <tr><td>MCQ single</td><td class="n">1&ndash;2</td><td class="n">1.5 min</td><td class="n">2&ndash;3</td></tr>
+  </table></div>
+  <p style="margin-bottom:0">If Re-order is eating the clock, take the partial credit and move. The Fill in the Blanks tasks are worth more than a perfect sequence.</p></div>`;
+}
+
+/* ----- dropdown FIB ----- */
+let rwI=0;
+function rwLoad(i){
+  rwI=i; const x=RWFIB[i];
+  let html=x.p;
+  x.b.forEach((b,j)=>{
+    const opts=b.o.map((o,k)=>`<option value="${k}">${o}</option>`).join("");
+    html=html.replace("{"+j+"}",`<select class="gap-sel" id="rw${j}"><option value="">— select —</option>${opts}</select>`);
+  });
+  document.getElementById("rdBody").innerHTML=
+   picker(RWFIB.length,"rwLoad",i)+
+   `<div class="card R" style="margin-top:12px"><h3 style="margin-top:0">${x.t}</h3>
+    <p style="line-height:2.4">${html}</p>
+    <div class="row"><button class="act" onclick="rwCheck()">Check</button>
+    <button class="act sub" onclick="rwLoad(${i})">Reset</button></div>
+    <div id="rwOut"></div></div>`;
+}
+function rwCheck(){
+  const x=RWFIB[rwI]; let ok=0;
+  const notes=x.b.map((b,j)=>{
+    const el=document.getElementById("rw"+j);
+    const hit=el.value!=="" && +el.value===b.a;
+    el.className="gap-sel "+(hit?"right":"wrong"); if(hit)ok++;
+    return `<tr><td class="n">${j+1}</td><td><b>${b.o[b.a]}</b></td><td>${b.w}</td></tr>`;
+  }).join("");
+  const cls=ok===x.b.length?"good":(ok>=x.b.length-1?"mid":"poor");
+  document.getElementById("rwOut").innerHTML=
+   `<div class="score ${cls}">${ok} of ${x.b.length} blanks &middot; ${Math.round(ok/x.b.length*100)}%</div>
+    <div class="scroll"><table><tr><th></th><th>Answer</th><th>Why</th></tr>${notes}</table></div>`;
+}
+
+/* ----- word-bank FIB ----- */
+let wbI=0, wbFill=[], wbSel=null;
+function wbLoad(i){
+  wbI=i; wbFill=Array(RFIB[i].a.length).fill(null); wbSel=null; wbDraw();
+}
+function wbDraw(){
+  const x=RFIB[wbI];
+  const bank=[...x.a,...x.d].sort();
+  let html=x.p;
+  x.a.forEach((_,j)=>{
+    const v=wbFill[j];
+    html=html.replace("{"+j+"}",
+      `<span class="gap-slot ${v?'filled':''}" id="wbg${j}" onclick="wbPlace(${j})">${v||"&nbsp;&nbsp;&nbsp;&nbsp;"}</span>`);
+  });
+  document.getElementById("rdBody").innerHTML=
+   picker(RFIB.length,"wbLoad",wbI)+
+   `<div class="card R" style="margin-top:12px"><h3 style="margin-top:0">${x.t}</h3>
+    <p style="line-height:2.6">${html}</p>
+    <div class="wordbank">${bank.map(w=>
+      `<span class="wb ${wbFill.includes(w)?'used':''} ${wbSel===w?'on':''}" onclick="wbPick('${w}')">${w}</span>`).join("")}
+      <div class="tiny" style="margin-top:6px">Tap a word, then tap a gap. Tap a filled gap to clear it. ${x.d.length} words are distractors.</div></div>
+    <div class="row" style="margin-top:0"><button class="act" onclick="wbCheck()">Check</button>
+    <button class="act sub" onclick="wbLoad(${wbI})">Reset</button></div>
+    <div id="wbOut"></div></div>`;
+}
+function wbPick(w){ wbSel = (wbSel===w?null:w); wbDraw(); }
+function wbPlace(j){
+  if(wbFill[j]){ wbFill[j]=null; wbSel=null; }
+  else if(wbSel){ wbFill[j]=wbSel; wbSel=null; }
+  wbDraw();
+}
+function wbCheck(){
+  const x=RFIB[wbI]; let ok=0;
+  x.a.forEach((a,j)=>{
+    const el=document.getElementById("wbg"+j);
+    const hit=wbFill[j]===a; if(hit)ok++;
+    el.className="gap-slot "+(hit?"right":"wrong");
+    if(!wbFill[j]) el.innerHTML=a;
+  });
+  const cls=ok===x.a.length?"good":(ok>=x.a.length-1?"mid":"poor");
+  document.getElementById("wbOut").innerHTML=
+   `<div class="score ${cls}">${ok} of ${x.a.length} blanks &middot; ${Math.round(ok/x.a.length*100)}%</div>
+    <p class="muted" style="margin-top:9px">Answers in order: <b>${x.a.join(" · ")}</b></p>
+    <p class="tiny" style="margin-bottom:0">${x.w}</p>`;
+}
+
+/* ----- MCQ multiple ----- */
+let mmI=0, mmSel=[];
+function mmLoad(i){ mmI=i; mmSel=[]; mmDraw(); }
+function mmDraw(){
+  const x=MCQM[mmI];
+  document.getElementById("rdBody").innerHTML=
+   picker(MCQM.length,"mmLoad",mmI)+
+   `<div class="card R" style="margin-top:12px"><h3 style="margin-top:0">${x.t}</h3>
+    <div class="passage">${x.p}</div>
+    <p><b>${x.q}</b></p>
+    <p class="tiny">Negative marking. A wrong selection cancels a correct one.</p>
+    ${x.o.map((o,j)=>`<div class="opt ${mmSel.includes(j)?'on':''}" onclick="mmTap(${j})">
+      <span class="box"></span><span class="lt">${"ABCDE"[j]}</span><span>${o}</span></div>`).join("")}
+    <div class="row"><button class="act" onclick="mmCheck()">Check</button>
+    <button class="act sub" onclick="mmLoad(${mmI})">Reset</button></div>
+    <div id="mmOut"></div></div>`;
+}
+function mmTap(j){ const k=mmSel.indexOf(j); if(k>=0)mmSel.splice(k,1); else mmSel.push(j); mmDraw(); }
+function mmCheck(){
+  const x=MCQM[mmI];
+  const right=mmSel.filter(j=>x.a.includes(j)).length;
+  const wrong=mmSel.filter(j=>!x.a.includes(j)).length;
+  const pts=Math.max(0,right-wrong);
+  document.querySelectorAll("#rdBody .opt").forEach((el,j)=>{
+    el.className="opt"+(x.a.includes(j)?" corr":(mmSel.includes(j)?" miss":""));
+  });
+  const cls=pts===x.a.length?"good":(pts>0?"mid":"poor");
+  document.getElementById("mmOut").innerHTML=
+   `<div class="score ${cls}">${right} correct, ${wrong} incorrect &rarr; <b>${pts} of ${x.a.length}</b> points
+    ${wrong?"<br>each wrong selection cancelled a right one":""}</div>
+    <p class="tiny" style="margin-top:9px;margin-bottom:0">${x.w}</p>`;
+}
+
+/* ----- MCQ single ----- */
+function msLoad(){
+  document.getElementById("rdBody").innerHTML=
+   `<p class="muted">Eight items. No negative marking, so answer every one even on a guess.</p>`+
+   MCQS.map((x,i)=>`<div class="card R"><div class="passage">${x.p}</div>
+    <p><b>${x.q}</b></p>
+    ${x.o.map((o,j)=>`<div class="opt" id="ms${i}_${j}" onclick="msPick(${i},${j})">
+      <span class="lt">${"ABCD"[j]}</span><span>${o}</span></div>`).join("")}
+    <div id="msOut${i}"></div></div>`).join("");
+}
+function msPick(i,j){
+  const x=MCQS[i];
+  x.o.forEach((_,k)=>{
+    const el=document.getElementById(`ms${i}_${k}`);
+    el.className="opt"+(k===x.a?" corr":(k===j?" miss":""));
+  });
+  document.getElementById("msOut"+i).innerHTML=
+   `<div class="score ${j===x.a?'good':'poor'}">${j===x.a?"Correct":"Answer: "+"ABCD"[x.a]}</div>
+    <p class="tiny" style="margin-top:8px;margin-bottom:0">${x.w}</p>`;
+}
+
+/* ----- sentence warm-up (reuses the old bank) ----- */
+let fibCur="A";
+function fibSet(k){
+  fibCur=k;
+  document.getElementById("rdBody").innerHTML=
+   `<div class="row" style="margin-top:0">
+     <button class="act ${k==='A'?'':'sub'}" onclick="fibSet('A')">Set A &middot; collocation</button>
+     <button class="act ${k==='B'?'':'sub'}" onclick="fibSet('B')">Set B &middot; word forms</button>
+     <button class="act sub" onclick="fibCheck()">Check</button></div>
+    <p class="tiny" style="margin-top:10px">Typed, unlike the real Reading tasks. This drills the vocabulary underneath both of them, which is where your points are.</p>
+    <div id="fibScore"></div>
+    <div id="fibBody" style="margin-top:14px">`+
+    FIB[k].map((q,i)=>{const parts=q[0].split("___");
+      return `<div class="q"><span class="qn">${String(i+1).padStart(2,"0")}</span>${parts[0]}<input type="text" class="blank" id="fib${i}" autocomplete="off">${parts[1]||""}<div class="ans" id="fiba${i}"></div></div>`;
+    }).join("")+`</div>`;
+}
+function fibCheck(){
+  const set=FIB[fibCur]; let ok=0;
+  set.forEach((q,i)=>{
+    const el=document.getElementById("fib"+i);
+    const v=el.value.trim().toLowerCase();
+    const hit=q[1].some(a=>a.toLowerCase()===v);
+    el.className="blank "+(hit?"right":"wrong"); if(hit)ok++;
+    const a=document.getElementById("fiba"+i);
+    a.className="ans show"; a.textContent=hit?"✓":"→ "+q[1].join(" / ");
+  });
+  const pct=Math.round(ok/set.length*100);
+  document.getElementById("fibScore").innerHTML=
+   `<div class="score ${pct>=80?'good':(pct>=60?'mid':'poor')}">${ok} of ${set.length} · ${pct}%</div>`;
+}
+
+/* ----- re-order ----- */
+let roSet=0, roPick=[];
+function roLoad(i){ roSet=i; roPick=[]; roDraw(); }
+function roDraw(){
+  const s=REORDER[roSet];
+  document.getElementById("rdBody").innerHTML=
+   picker(REORDER.length,"roLoad",roSet)+
+   `<p class="tiny" style="margin-top:10px">Tap paragraphs in the order you think they belong. Marked on adjacent pairs.</p>`+
+   s.items.map((t,i)=>{const p=roPick.indexOf(i);
+     return `<div class="reorder-item ${p>=0?'picked':''}" onclick="roTap(${i})">
+       <span class="pos">${p>=0?p+1:"·"}</span><span>${t}</span></div>`;}).join("")+
+   `<div class="row"><button class="act" onclick="roCheck()">Check order</button>
+    <button class="act sub" onclick="roLoad(${roSet})">Clear</button></div><div id="roOut"></div>`;
+}
+function roTap(i){ const p=roPick.indexOf(i); if(p>=0)roPick.splice(p,1); else roPick.push(i); roDraw(); }
+function roCheck(){
+  const s=REORDER[roSet];
+  if(roPick.length!==s.items.length){
+    document.getElementById("roOut").innerHTML='<div class="score mid">Select all four in order first.</div>'; return;
+  }
+  let pairs=0;
+  for(let i=0;i<s.order.length-1;i++){
+    const a=roPick.indexOf(s.order[i]), b=roPick.indexOf(s.order[i+1]);
+    if(b===a+1) pairs++;
+  }
+  const exact=roPick.join()===s.order.join();
+  document.getElementById("roOut").innerHTML=
+   `<div class="score ${exact?'good':(pairs>=2?'mid':'poor')}">${pairs} of 3 adjacent pairs${exact?" · full sequence":""}</div>
+    <div class="card" style="margin-top:10px"><h3 style="margin-top:0">Why</h3>
+    <p style="margin-bottom:0">${s.why}</p>
+    <p class="tiny" style="margin-top:8px;margin-bottom:0">Correct order: ${s.order.map(i=>String.fromCharCode(65+i)).join(" → ")}</p></div>`;
+}
+
 /* ============ init ============ */
-drawRail(); drawToday(); fibSet('A'); wfdNext(); roLoad(0);
-swtLoad(0); sstLoad(0); drawColl(''); drawMocks(); drawErrors();
+drawRail(); drawToday(); rdNav(); rdGuide();
+wfdNext(); swtLoad(0); sstLoad(0); drawColl(""); drawMocks(); drawErrors();
+
 </script>
