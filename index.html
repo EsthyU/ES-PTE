@@ -1,0 +1,1087 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PTE Core Trainer</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PTE Core">
+<meta name="theme-color" content="#15181C">
+<style>
+:root{
+  --paper:#EDEEE9;
+  --surface:#FFFFFF;
+  --ink:#15181C;
+  --ink-2:#5A6169;
+  --ink-3:#9AA1A8;
+  --rule:#D6D9D2;
+  --rule-2:#E6E8E2;
+  --listening:#1E3A5F;
+  --reading:#4C7A12;
+  --speaking:#4E545C;
+  --writing:#8A1A6E;
+  --ok:#2F6F3E;
+  --bad:#A32020;
+  --warn:#9A6A00;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:900px;margin:0 auto;padding:0 18px 80px}
+
+/* ---------- gap rail ---------- */
+.rail{
+  background:var(--ink);color:var(--paper);
+  padding:18px 18px 14px;margin:0 -18px 0;
+  padding-top:calc(18px + env(safe-area-inset-top));
+}
+.rail-inner{max-width:900px;margin:0 auto}
+.rail-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.rail-title{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8D959D;font-weight:600}
+.countdown{font-family:var(--mono);font-size:13px;color:#C8CDD2}
+.countdown b{color:#fff;font-size:20px;font-weight:700}
+.bars{display:grid;gap:9px}
+.bar-row{display:grid;grid-template-columns:64px 1fr 78px;align-items:center;gap:10px}
+.bar-label{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#9AA1A8;font-weight:600}
+.track{position:relative;height:16px;background:#22262C;border-radius:2px;overflow:visible}
+.fill{position:absolute;left:0;top:0;bottom:0;border-radius:2px;transition:width .5s ease}
+.thresh{position:absolute;top:-4px;bottom:-4px;width:2px;background:#EDEEE9}
+.thresh::after{
+  content:attr(data-t);position:absolute;top:-13px;left:50%;transform:translateX(-50%);
+  font-family:var(--mono);font-size:9px;color:#8D959D;
+}
+.bar-val{font-family:var(--mono);font-size:12px;text-align:right;color:#C8CDD2}
+.bar-val .gap{color:#FF8A8A}
+.bar-val .clear{color:#7FD394}
+
+/* ---------- nav ---------- */
+nav{
+  background:var(--surface);border-bottom:1px solid var(--rule);
+  margin:0 -18px 26px;padding:0 18px;position:sticky;top:0;z-index:20;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+}
+.nav-inner{max-width:900px;margin:0 auto;display:flex;gap:2px;min-width:max-content}
+nav button{
+  background:none;border:none;border-bottom:2px solid transparent;
+  font-family:var(--sans);font-size:13px;font-weight:600;color:var(--ink-2);
+  padding:13px 12px;cursor:pointer;white-space:nowrap;letter-spacing:.01em;
+}
+nav button:hover{color:var(--ink)}
+nav button.on{color:var(--ink);border-bottom-color:var(--ink)}
+nav button:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+
+/* ---------- typography ---------- */
+h1{font-size:30px;font-weight:800;letter-spacing:-.028em;line-height:1.1;margin-bottom:6px}
+h2{font-size:20px;font-weight:750;letter-spacing:-.018em;margin:34px 0 10px}
+h3{font-size:14px;font-weight:700;margin:22px 0 8px}
+.eyebrow{
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  font-weight:700;color:var(--ink-3);margin-bottom:9px;
+}
+.lede{color:var(--ink-2);font-size:15px;margin-bottom:8px}
+p{margin-bottom:11px}
+.sec{display:none}
+.sec.on{display:block;animation:in .22s ease}
+@keyframes in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* ---------- cards ---------- */
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:18px;margin-bottom:14px}
+.card.L{border-left:3px solid var(--listening)}
+.card.R{border-left:3px solid var(--reading)}
+.card.S{border-left:3px solid var(--speaking)}
+.card.W{border-left:3px solid var(--writing)}
+.tag{
+  display:inline-block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  font-weight:700;padding:3px 7px;border-radius:2px;margin-right:6px;vertical-align:2px;
+}
+.tag.L{background:var(--listening);color:#fff}
+.tag.R{background:var(--reading);color:#fff}
+.tag.S{background:var(--speaking);color:#fff}
+.tag.W{background:var(--writing);color:#fff}
+.tag.ghost{background:none;border:1px solid var(--rule);color:var(--ink-3)}
+
+/* ---------- controls ---------- */
+button.act{
+  background:var(--ink);color:var(--paper);border:none;border-radius:3px;
+  font-family:var(--sans);font-size:13px;font-weight:650;padding:9px 15px;cursor:pointer;
+}
+button.act:hover{background:#2A2F36}
+button.act.sub{background:none;color:var(--ink);border:1px solid var(--rule)}
+button.act.sub:hover{background:var(--rule-2)}
+button.act:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+button.act:disabled{opacity:.4;cursor:not-allowed}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+input[type=text],textarea,input[type=number],select{
+  font-family:var(--sans);font-size:15px;color:var(--ink);
+  background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:8px 10px;width:100%;
+}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--ink);outline-offset:-1px;border-color:var(--ink)}
+textarea{resize:vertical;line-height:1.6;font-size:15px}
+.blank{
+  display:inline-block;width:132px;font-family:var(--mono);font-size:14px;
+  padding:3px 7px;border:none;border-bottom:2px solid var(--reading);border-radius:0;
+  background:#F7F8F4;
+}
+.blank.right{border-bottom-color:var(--ok);background:#EFF6F0;color:var(--ok);font-weight:600}
+.blank.wrong{border-bottom-color:var(--bad);background:#FBF0F0;color:var(--bad)}
+
+/* ---------- data ---------- */
+.num{font-family:var(--mono)}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0 16px}
+th{
+  text-align:left;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:700;padding:7px 9px;border-bottom:1px solid var(--rule);
+}
+td{padding:8px 9px;border-bottom:1px solid var(--rule-2);vertical-align:top}
+td.n{font-family:var(--mono);white-space:nowrap}
+tr.hi td{background:#F4F7EE}
+.scroll{overflow-x:auto}
+
+.q{margin-bottom:15px;padding-bottom:15px;border-bottom:1px solid var(--rule-2);line-height:2.1}
+.q:last-child{border-bottom:none}
+.qn{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-right:8px}
+.ans{font-family:var(--mono);font-size:12px;color:var(--ink-2);margin-top:4px;display:none}
+.ans.show{display:block}
+
+.score{font-family:var(--mono);font-size:13px;padding:9px 12px;border-radius:3px;margin-top:12px}
+.score.good{background:#EFF6F0;color:var(--ok)}
+.score.mid{background:#FBF6E8;color:var(--warn)}
+.score.poor{background:#FBF0F0;color:var(--bad)}
+
+.wc{font-family:var(--mono);font-size:13px;font-weight:600}
+.wc.in{color:var(--ok)}
+.wc.out{color:var(--bad)}
+.wc.edge{color:var(--warn)}
+
+.timer{font-family:var(--mono);font-size:26px;font-weight:700;letter-spacing:-.02em}
+.timer.low{color:var(--bad)}
+
+ul,ol{margin:0 0 12px 20px}
+li{margin-bottom:5px}
+.plain{list-style:none;margin-left:0}
+.plain li{display:flex;gap:9px;align-items:flex-start;margin-bottom:7px}
+.chk{width:17px;height:17px;flex:0 0 17px;margin-top:2px;cursor:pointer;accent-color:var(--ink)}
+.done{color:var(--ink-3);text-decoration:line-through}
+
+.split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){
+  .split{grid-template-columns:1fr}
+  h1{font-size:24px}
+  .bar-row{grid-template-columns:52px 1fr 66px;gap:7px}
+  .blank{width:104px}
+}
+.muted{color:var(--ink-2);font-size:13px}
+.tiny{font-size:12px;color:var(--ink-3)}
+.pill{display:inline-block;font-family:var(--mono);font-size:11px;background:var(--rule-2);padding:2px 7px;border-radius:2px;margin:0 3px 3px 0}
+.reorder-item{
+  background:var(--surface);border:1px solid var(--rule);border-radius:3px;
+  padding:11px 13px;margin-bottom:7px;cursor:pointer;font-size:14px;display:flex;gap:11px;
+}
+.reorder-item:hover{border-color:var(--ink)}
+.reorder-item .pos{font-family:var(--mono);font-weight:700;color:var(--ink-3);flex:0 0 20px}
+.reorder-item.picked{border-color:var(--reading);background:#F4F7EE}
+.reorder-item.picked .pos{color:var(--reading)}
+hr{border:none;border-top:1px solid var(--rule);margin:26px 0}
+.passage{background:#F7F8F4;border-left:2px solid var(--rule);padding:13px 15px;font-size:14px;line-height:1.7;margin:10px 0}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="rail">
+  <div class="rail-inner">
+    <div class="rail-top">
+      <div class="rail-title">PTE Core &middot; gap to CLB&nbsp;9</div>
+      <div class="countdown"><b id="days">–</b> days to 22 Sep</div>
+    </div>
+    <div class="bars" id="bars"></div>
+  </div>
+</div>
+
+<nav><div class="nav-inner" id="nav"></div></nav>
+
+<div class="wrap">
+
+<!-- ===================== TODAY ===================== -->
+<section class="sec on" id="s-today">
+  <div class="eyebrow">Dashboard</div>
+  <h1>Today</h1>
+  <p class="lede" id="todayDate"></p>
+
+  <div class="card">
+    <h3 style="margin-top:0">Daily core &mdash; 30 minutes, every day</h3>
+    <ul class="plain" id="coreList"></ul>
+    <p class="tiny">If you do nothing else on a bad day, do these two. Fill in the Blanks feeds Reading and Writing at once.</p>
+  </div>
+
+  <div class="card" id="focusCard"></div>
+
+  <h2>Where the time goes</h2>
+  <div class="scroll"><table>
+    <tr><th>Skill</th><th>Have</th><th>Need</th><th>Gap</th><th>Study share</th></tr>
+    <tr class="hi"><td><span class="tag R">R</span>Reading</td><td class="n">70</td><td class="n">78</td><td class="n">+8</td><td class="n">50%</td></tr>
+    <tr class="hi"><td><span class="tag W">W</span>Writing</td><td class="n">79</td><td class="n">88</td><td class="n">+9</td><td class="n">30%</td></tr>
+    <tr><td><span class="tag L">L</span>Listening</td><td class="n">88</td><td class="n">82</td><td class="n">clear</td><td class="n">15%</td></tr>
+    <tr><td><span class="tag S">S</span>Speaking</td><td class="n">90</td><td class="n">84</td><td class="n">clear</td><td class="n">5%</td></tr>
+  </table></div>
+  <p class="muted">IRCC takes your lowest skill. No averaging, no compensation. Speaking is already at ceiling &mdash; every minute spent there is a minute stolen from Reading.</p>
+</section>
+
+<!-- ===================== FIB ===================== -->
+<section class="sec" id="s-fib">
+  <div class="eyebrow"><span class="tag R">R</span><span class="tag W">W</span> Priority 1</div>
+  <h1>Fill in the Blanks</h1>
+  <p class="lede">Feeds Reading and Writing simultaneously. Your highest-leverage task. A correct word spelled wrong scores zero.</p>
+
+  <div class="card">
+    <h3 style="margin-top:0">Method</h3>
+    <ol>
+      <li>Identify the grammatical slot before the meaning. Noun, verb form, adjective, adverb.</li>
+      <li>Check for a collocation trigger. Most blanks want a fixed partner, not a synonym.</li>
+      <li>Read the full sentence back with your word in place.</li>
+      <li>Spell it, then check the spelling. Never leave a blank.</li>
+    </ol>
+  </div>
+
+  <div class="row">
+    <button class="act" onclick="fibSet('A')">Set A &middot; workplace register</button>
+    <button class="act sub" onclick="fibSet('B')">Set B &middot; word forms</button>
+    <button class="act sub" onclick="fibCheck()">Check answers</button>
+    <button class="act sub" onclick="fibSet(fibCur)">Reset</button>
+  </div>
+  <div id="fibScore"></div>
+  <div id="fibBody" style="margin-top:16px"></div>
+</section>
+
+<!-- ===================== WFD ===================== -->
+<section class="sec" id="s-wfd">
+  <div class="eyebrow"><span class="tag L">L</span><span class="tag W">W</span> Daily core</div>
+  <h1>Write from Dictation</h1>
+  <p class="lede">Per-word partial credit, and it feeds Writing. Plural <span class="num">-s</span> and past-tense <span class="num">-ed</span> are the most commonly dropped endings. Punctuation and capitals are not scored.</p>
+
+  <div class="card L">
+    <div class="row" style="margin-top:0">
+      <select id="wfdLen" style="width:auto;min-width:170px">
+        <option value="all">All 60 sentences</option>
+        <option value="short">Short &middot; 8&ndash;10 words</option>
+        <option value="med">Medium &middot; 11&ndash;13 words</option>
+        <option value="long">Long &middot; 14&ndash;17 words</option>
+      </select>
+      <button class="act" onclick="wfdSpeak()">Play sentence</button>
+      <button class="act sub" onclick="wfdSpeak()">Replay</button>
+      <button class="act sub" onclick="wfdNext()">Next</button>
+    </div>
+    <p class="tiny" style="margin-top:9px">In the exam you hear it once. Play once, type, then score.</p>
+    <textarea id="wfdIn" rows="3" placeholder="Type what you heard" style="margin-top:12px"></textarea>
+    <div class="row">
+      <button class="act" onclick="wfdScore()">Score it</button>
+      <button class="act sub" onclick="wfdReveal()">Show sentence</button>
+      <span class="num tiny" id="wfdCount"></span>
+    </div>
+    <div id="wfdOut"></div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Running total this session</h3>
+    <p class="num" id="wfdTally">0 sentences &middot; 0% words correct</p>
+  </div>
+</section>
+
+<!-- ===================== REORDER ===================== -->
+<section class="sec" id="s-reorder">
+  <div class="eyebrow"><span class="tag R">R</span> Reading</div>
+  <h1>Re-order Paragraphs</h1>
+  <p class="lede">Partial credit for correct adjacent pairs, so locking two confident pairs beats agonising over the whole sequence. Hard cap: two minutes per item.</p>
+
+  <div class="card R">
+    <h3 style="margin-top:0">Cannot be first</h3>
+    <p class="muted">Any paragraph opening with a back-reference or connector:</p>
+    <div>
+      <span class="pill">this</span><span class="pill">these</span><span class="pill">such</span><span class="pill">it</span><span class="pill">they</span><span class="pill">the former</span><span class="pill">the latter</span><span class="pill">however</span><span class="pill">therefore</span><span class="pill">moreover</span><span class="pill">in addition</span><span class="pill">another</span><span class="pill">as a result</span><span class="pill">for example</span><span class="pill">consequently</span><span class="pill">nevertheless</span><span class="pill">by contrast</span><span class="pill">subsequently</span><span class="pill">finally</span><span class="pill">despite this</span>
+    </div>
+    <h3>Chaining signals</h3>
+    <div class="scroll"><table>
+      <tr><th>You see</th><th>It means</th></tr>
+      <tr><td>Pronoun with no antecedent in that paragraph</td><td>Antecedent is in the paragraph immediately before</td></tr>
+      <tr><td>Definite article on first mention &mdash; &ldquo;the scheme&rdquo;</td><td>The scheme was introduced earlier</td></tr>
+      <tr><td>Indefinite article &mdash; &ldquo;a new scheme&rdquo;</td><td>This is the introduction, so it comes early</td></tr>
+      <tr><td>Full name, then surname only</td><td>Full name comes first</td></tr>
+      <tr><td>A general claim</td><td>A specific example usually follows</td></tr>
+      <tr><td>A question</td><td>The answer is the next paragraph</td></tr>
+    </table></div>
+  </div>
+
+  <div class="row"><button class="act" onclick="roLoad(0)">Set 1</button><button class="act sub" onclick="roLoad(1)">Set 2</button><button class="act sub" onclick="roLoad(2)">Set 3</button></div>
+  <p class="tiny" style="margin-top:10px">Click paragraphs in the order you think they belong.</p>
+  <div id="roBody" style="margin-top:10px"></div>
+  <div id="roOut"></div>
+</section>
+
+<!-- ===================== EMAIL ===================== -->
+<section class="sec" id="s-email">
+  <div class="eyebrow"><span class="tag W">W</span> Priority 2</div>
+  <h1>Write Email</h1>
+  <p class="lede">Nine minutes, 80&ndash;120 words. The largest single Writing item. Aim 95&ndash;110 &mdash; nothing else matters if you breach the count.</p>
+
+  <div class="card W">
+    <div class="row" style="margin-top:0;justify-content:space-between">
+      <div class="timer" id="emTimer">9:00</div>
+      <div>
+        <button class="act" onclick="emStart()" id="emBtn">Start 9:00</button>
+        <button class="act sub" onclick="emReset()">Reset</button>
+      </div>
+    </div>
+    <hr style="margin:14px 0">
+    <div class="row" style="margin-top:0">
+      <button class="act sub" onclick="emPrompt()">New prompt</button>
+      <span class="tiny num" id="emN"></span>
+    </div>
+    <p id="emPromptText" style="margin-top:11px;font-size:15px"><em class="muted">Press &ldquo;New prompt&rdquo; to begin.</em></p>
+    <textarea id="emIn" rows="13" placeholder="Dear …" oninput="emCount()" style="margin-top:6px"></textarea>
+    <div class="row" style="justify-content:space-between">
+      <span class="wc" id="emWc">0 words</span>
+      <span class="tiny">Target 95&ndash;110 &middot; hard limits 80 and 120</span>
+    </div>
+  </div>
+
+  <h2>The skeleton</h2>
+  <div class="passage">Dear [Name / Sir or Madam],<br><br>
+  I am writing to [purpose, one clause, tied directly to the prompt].<br><br>
+  [Prompt point 1.] [Prompt point 2, using a subordinate clause.] [Prompt point 3 &mdash; usually a request, using a modal.]<br><br>
+  I would be grateful if you could [specific action]. Please let me know if you require any further information.<br><br>
+  Kind regards,<br>Esther</div>
+  <p class="muted">Type it until it takes under 60 seconds. That leaves seven minutes for content and one for proofing.</p>
+
+  <h2>Self-mark every email</h2>
+  <div class="card"><div id="rubric"></div><div id="rubricOut"></div></div>
+
+  <h2>Register pairs &mdash; never mix</h2>
+  <div class="scroll"><table>
+    <tr><th>Context</th><th>Opener</th><th>Closer</th><th>Contractions</th></tr>
+    <tr><td>Unknown, formal</td><td>Dear Sir or Madam</td><td>Yours faithfully</td><td class="n">No</td></tr>
+    <tr><td>Named, formal</td><td>Dear Ms Ionescu</td><td>Yours sincerely</td><td class="n">No</td></tr>
+    <tr><td>Named, semi-formal</td><td>Dear Maria</td><td>Kind regards</td><td class="n">Sparingly</td></tr>
+    <tr><td>Colleague, informal</td><td>Hi Maria</td><td>Best</td><td class="n">Yes</td></tr>
+  </table></div>
+
+  <h2>Function language</h2>
+  <div id="funcBank"></div>
+
+  <h2>Model answers</h2>
+  <div id="models"></div>
+</section>
+
+<!-- ===================== SUMMARIES ===================== -->
+<section class="sec" id="s-sum">
+  <div class="eyebrow"><span class="tag R">R</span><span class="tag W">W</span><span class="tag L">L</span> Both deficits</div>
+  <h1>Summary tasks</h1>
+
+  <h2>Summarize Written Text</h2>
+  <p class="lede">Ten minutes, 25&ndash;50 words. Outside that range scores zero. Target 38&ndash;44.</p>
+  <div class="card R">
+    <p><b>Template A &mdash; one complex sentence</b><br><span class="muted">&ldquo;Although [concession], the passage argues that [main claim], demonstrating that [key evidence or implication].&rdquo;</span></p>
+    <p style="margin-bottom:0"><b>Template B &mdash; two sentences</b><br><span class="muted">&ldquo;[Main claim: subject&ndash;verb&ndash;object.] This is supported by [evidence one] and [evidence two], suggesting that [implication].&rdquo;</span></p>
+  </div>
+  <div class="row"><button class="act" onclick="swtLoad(0)">Passage 1</button><button class="act sub" onclick="swtLoad(1)">Passage 2</button><button class="act sub" onclick="swtLoad(2)">Passage 3</button></div>
+  <div id="swtBody" style="margin-top:12px"></div>
+
+  <hr>
+
+  <h2>Summarize Spoken Text</h2>
+  <p class="lede">Eight minutes, 20&ndash;30 words. Under 5 or over 40 scores zero. Target 24&ndash;28. One main idea plus one qualifier, nothing else.</p>
+  <div class="card L">
+    <p style="margin-bottom:0"><b>Template</b><br><span class="muted">&ldquo;The speaker explains that [main idea], noting that [one supporting point or consequence].&rdquo;</span> That is 8 words of scaffold, leaving 12&ndash;22 for content.</p>
+  </div>
+  <div class="row"><button class="act" onclick="sstLoad(0)">Talk 1</button><button class="act sub" onclick="sstLoad(1)">Talk 2</button><button class="act sub" onclick="sstLoad(2)">Talk 3</button></div>
+  <div id="sstBody" style="margin-top:12px"></div>
+</section>
+
+<!-- ===================== REFERENCE ===================== -->
+<section class="sec" id="s-ref">
+  <div class="eyebrow">Reference</div>
+  <h1>Banks and rules</h1>
+
+  <h2>Collocation bank</h2>
+  <p class="muted">The core vocabulary asset for both Fill in the Blanks tasks. Drill both directions: given the verb, name the nouns.</p>
+  <input type="text" id="colSearch" placeholder="Search the bank" oninput="colFilter()" style="margin-bottom:12px">
+  <div id="colBody"></div>
+
+  <h2>Spelling list</h2>
+  <p class="muted">These recur in dictation, both Fill in the Blanks tasks, and Write Email. Pick UK spelling and stay consistent.</p>
+  <div id="spellBody"></div>
+
+  <h2>Grammar repair</h2>
+  <p class="muted">The highest-frequency accuracy leaks at Writing 79. One per day for the first two weeks.</p>
+  <div id="gramBody"></div>
+
+  <h2>Word limits</h2>
+  <div class="scroll"><table>
+    <tr><th>Task</th><th>Range</th><th>Target</th><th>Penalty</th></tr>
+    <tr><td>Summarize Written Text</td><td class="n">25&ndash;50</td><td class="n">38&ndash;44</td><td>Outside range = zero</td></tr>
+    <tr><td>Write Email</td><td class="n">80&ndash;120</td><td class="n">95&ndash;110</td><td>Form penalty outside range</td></tr>
+    <tr><td>Summarize Spoken Text</td><td class="n">20&ndash;30</td><td class="n">24&ndash;28</td><td>Under 5 or over 40 = zero</td></tr>
+  </table></div>
+
+  <h2>Negative marking</h2>
+  <p class="muted">Reading MCQ multiple answers, Listening MCQ multiple answers, Highlight Incorrect Words. On those three, guessing has negative expected value. Everywhere else, never leave a blank.</p>
+
+  <h2>CLB conversion</h2>
+  <p class="tiny">Pearson PTE Core to CLB, V1 Jan 2024. Verify at canada.ca before submitting anything to IRCC.</p>
+  <div class="scroll"><table>
+    <tr><th>CLB</th><th>Listening</th><th>Reading</th><th>Speaking</th><th>Writing</th></tr>
+    <tr><td class="n">10</td><td class="n">89&ndash;90</td><td class="n">88&ndash;90</td><td class="n">89&ndash;90</td><td class="n">90</td></tr>
+    <tr class="hi"><td class="n"><b>9</b></td><td class="n"><b>82&ndash;88</b></td><td class="n"><b>78&ndash;87</b></td><td class="n"><b>84&ndash;88</b></td><td class="n"><b>88&ndash;89</b></td></tr>
+    <tr><td class="n">8</td><td class="n">71&ndash;81</td><td class="n">69&ndash;77</td><td class="n">76&ndash;83</td><td class="n">79&ndash;87</td></tr>
+    <tr><td class="n">7</td><td class="n">60&ndash;70</td><td class="n">60&ndash;68</td><td class="n">68&ndash;75</td><td class="n">69&ndash;78</td></tr>
+  </table></div>
+
+  <h2>Speaking &mdash; maintenance only</h2>
+  <div class="card S">
+    <p>You scored 90. That is the ceiling. Fifteen minutes once a week: 5 Read Aloud, 5 Repeat Sentence, 2 Describe Image, 2 Respond to a Situation.</p>
+    <p><b>Describe Image frame</b> &mdash; 25s prep, 40s response, fill all 40:<br>
+    <span class="muted">&ldquo;This [chart type] presents information about [topic]. The most striking feature is that [highest/lowest/biggest change]. In contrast, [second data point]. There is also a noticeable [trend] in [third element]. Overall, the image suggests that [restate headline pattern].&rdquo;</span></p>
+    <p style="margin-bottom:0"><b>Respond to a Situation frame</b> &mdash; 40s response:<br>
+    <span class="muted">&ldquo;[Acknowledge appropriately]. [State your position or apology directly.] [One brief reason.] [Concrete alternative or next step.] [Polite close.]&rdquo;</span></p>
+  </div>
+  <p class="muted">Three rules that protect a 90: never self-correct in Read Aloud; never pause three seconds, because the recording can close; fill the whole response window.</p>
+</section>
+
+<!-- ===================== PLAN ===================== -->
+<section class="sec" id="s-plan">
+  <div class="eyebrow">43 days</div>
+  <h1>The plan</h1>
+  <p class="lede">75&ndash;90 minutes on weekdays, 2.5&ndash;3 hours at weekends. Deliberately not a four-hour plan &mdash; your defence window opens in September and your application backlog is real.</p>
+  <div id="planBody"></div>
+</section>
+
+<!-- ===================== LOG ===================== -->
+<section class="sec" id="s-log">
+  <div class="eyebrow">Tracking</div>
+  <h1>Log</h1>
+
+  <h2>Mock scores</h2>
+  <p class="muted">Logging a mock updates the gap rail at the top of every screen.</p>
+  <div class="card">
+    <div class="split">
+      <div><label class="tiny">Date</label><input type="text" id="mkDate" placeholder="15 Aug"></div>
+      <div><label class="tiny">Listening</label><input type="number" id="mkL" min="10" max="90"></div>
+      <div><label class="tiny">Reading</label><input type="number" id="mkR" min="10" max="90"></div>
+      <div><label class="tiny">Speaking</label><input type="number" id="mkS" min="10" max="90"></div>
+      <div><label class="tiny">Writing</label><input type="number" id="mkW" min="10" max="90"></div>
+    </div>
+    <div class="row"><button class="act" onclick="mkSave()">Save mock</button></div>
+  </div>
+  <div id="mkList"></div>
+
+  <h2>Error log</h2>
+  <p class="muted">Only five classes. At Reading 70 and Writing 79, expect Knowledge and Mechanical to dominate early &mdash; both are the fastest to eliminate.</p>
+  <div class="card">
+    <div class="split">
+      <div><label class="tiny">Task</label><input type="text" id="erTask" placeholder="R&amp;W Fill in the Blanks"></div>
+      <div><label class="tiny">Class</label>
+        <select id="erClass">
+          <option>Mechanical &mdash; spelling, word count, form</option>
+          <option>Timing &mdash; ran out, rushed, dead air</option>
+          <option>Comprehension &mdash; misread or misheard</option>
+          <option>Template &mdash; deviated from the frame</option>
+          <option>Knowledge &mdash; vocabulary or collocation gap</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:9px"><label class="tiny">What went wrong</label><input type="text" id="erWhat" placeholder="wrote 'reach a deadline'"></div>
+    <div class="row"><button class="act" onclick="erSave()">Add entry</button></div>
+  </div>
+  <div id="erCounts"></div>
+  <div id="erList"></div>
+</section>
+
+</div>
+
+<script>
+/* ============ storage with graceful fallback ============ */
+/* Three layers, tried in order: Claude artifact storage, then browser
+   localStorage when running as a local file or on a web host, then
+   in-memory as a last resort. */
+const mem = {};
+const PFX = 'pte:';
+
+async function put(k,v){
+  const s = JSON.stringify(v);
+  mem[k] = v;
+  try{ if(window.storage){ await window.storage.set(k, s); return; } }catch(e){}
+  try{ localStorage.setItem(PFX+k, s); }catch(e){}
+}
+async function get(k,d){
+  try{
+    if(window.storage){
+      const r = await window.storage.get(k);
+      if(r) return JSON.parse(r.value);
+    }
+  }catch(e){}
+  try{
+    const r = localStorage.getItem(PFX+k);
+    if(r !== null) return JSON.parse(r);
+  }catch(e){}
+  return (k in mem) ? mem[k] : d;
+}
+
+/* ============ data ============ */
+const EXAM = new Date(2026,8,22);
+
+const SKILLS = [
+  {k:'L',name:'Listening',base:88,target:82,c:'--listening'},
+  {k:'R',name:'Reading', base:70,target:78,c:'--reading'},
+  {k:'S',name:'Speaking',base:90,target:84,c:'--speaking'},
+  {k:'W',name:'Writing', base:79,target:88,c:'--writing'}
+];
+let current = {L:88,R:70,S:90,W:79};
+
+const FIB = {
+A:[
+ ["All contractors must ___ with the site safety regulations at all times.",["comply"]],
+ ["The committee will ___ a full review of the tendering process in October.",["conduct","undertake"]],
+ ["Annual leave requests must be submitted at least three weeks in ___.",["advance"]],
+ ["The delay was caused by circumstances entirely beyond our ___.",["control"]],
+ ["Applicants who have not received a response within 14 days should assume their application has been ___.",["unsuccessful"]],
+ ["The new policy will take ___ from the first of next month.",["effect"]],
+ ["We would be grateful if you could ___ the attached form and return it by Friday.",["complete"]],
+ ["The report ___ that customer satisfaction has declined for the third consecutive quarter.",["indicates","suggests","states","shows"]],
+ ["Please note that this offer is ___ to availability and may be withdrawn without notice.",["subject"]],
+ ["The training programme is designed to ___ employees with the updated procedures.",["familiarise","familiarize"]],
+ ["Membership fees are non-refundable except in ___ circumstances.",["exceptional"]],
+ ["The manager ___ concerns about the department's ability to meet the deadline.",["raised","expressed","voiced"]],
+ ["Failure to comply with these terms may ___ in the cancellation of your account.",["result"]],
+ ["The survey ___ responses from more than two thousand participants.",["attracted","received","generated"]],
+ ["All visitors are required to ___ in at reception before entering the building.",["sign"]],
+ ["The council has ___ an initiative to reduce waste across the borough.",["launched","introduced"]],
+ ["These figures ___ for approximately 40 per cent of total annual expenditure.",["account"]],
+ ["Candidates must ___ the minimum experience requirement to be considered.",["meet","satisfy"]],
+ ["The company is ___ reliant on a small number of major clients.",["heavily"]],
+ ["Any amendment to this agreement must be made in writing and signed by both ___.",["parties"]],
+ ["The scheme has been ___ regarded as a success by independent reviewers.",["widely"]],
+ ["Applicants should note that references will be ___ prior to any offer of employment.",["sought","obtained","taken"]],
+ ["Sales rose sharply in the second quarter, ___ a two-year period of stagnation.",["following","after","ending"]],
+ ["The building will remain closed to the public ___ further notice.",["until"]],
+ ["We apologise for any ___ caused by the temporary closure of the car park.",["inconvenience","disruption"]]
+],
+B:[
+ ["The ___ of the new system has significantly reduced processing times. [noun ← implement]",["implementation"]],
+ ["Employees are expected to behave ___ at all times during client visits. [adverb ← profession]",["professionally"]],
+ ["There has been a ___ increase in demand for the service since March. [adjective ← steady]",["steady"]],
+ ["The proposal was rejected on the grounds that it was not financially ___. [adjective ← viability]",["viable"]],
+ ["All data is stored ___ in accordance with current regulations. [adverb ← secure]",["securely"]],
+ ["The committee's ___ was that the current arrangement should continue. [noun ← recommend]",["recommendation"]],
+ ["Poor communication has been ___ identified as the main issue. [adverb ← repeat]",["repeatedly"]],
+ ["The organisation relies ___ on volunteer contributions. [adverb ← heavy]",["heavily"]],
+ ["Attendance at the briefing is ___ for all new starters. [adjective ← mandate / compel]",["mandatory","compulsory"]],
+ ["The ___ of the deadline caused considerable disruption. [noun ← extend]",["extension"]]
+]};
+
+const WFD = {
+short:["The meeting has been rescheduled to next Tuesday afternoon.","Please submit your application before the closing date.","All employees must complete the safety training this month.","The library will remain closed during the public holiday.","Additional funding has been allocated to the research department.","Students are advised to check the timetable regularly.","The report must be approved by the finance committee.","Parking permits are available from the reception desk.","Several departments have raised concerns about the proposal.","The results will be published later this year.","Applicants should provide two professional references.","The equipment requires regular maintenance and inspection.","Attendance at the induction session is compulsory.","The council has approved plans for the new development.","Payment must be received within thirty days of invoicing."],
+med:["The committee has recommended that the current policy be reviewed annually.","Participants were asked to complete a short questionnaire before the session.","The organisation relies heavily on funding from private donors and sponsors.","Delegates are reminded that the conference programme is subject to change.","Considerable progress has been made towards achieving the department's annual targets.","Applications received after the deadline will not be considered under any circumstances.","The survey found that most residents were satisfied with the local services.","Staff should familiarise themselves with the updated health and safety procedures.","The building will be closed for refurbishment throughout the summer months.","Evidence suggests that early intervention significantly improves long-term outcomes for patients.","The university has invested substantially in laboratory equipment over recent years.","All correspondence relating to this matter should be addressed to the registrar.","The scheme was introduced in response to growing demand from local businesses.","Researchers have identified several factors contributing to the decline in numbers.","Managers are expected to conduct performance reviews at six-monthly intervals."],
+long:["The committee concluded that further consultation would be necessary before any decision could be reached.","Students who wish to appeal against their results must do so within fourteen days.","The report highlights the need for greater investment in public transport across the region.","Employees are entitled to request flexible working arrangements after twenty-six weeks of continuous service.","Recent studies have demonstrated a clear relationship between sleep quality and cognitive performance.","The organisation has expanded rapidly, opening offices in seventeen countries over the past decade.","Applicants must demonstrate that they meet the minimum qualification requirements set out in the guidance.","The department has introduced a new system for tracking enquiries and monitoring response times.","Participants reported that the training had significantly improved their confidence in handling difficult conversations.","The council will hold a public consultation before finalising proposals for the town centre.","It is essential that all documentation is submitted in accordance with the published guidelines.","The findings suggest that convenience is a stronger predictor of participation than environmental concern.","Members of staff who have not yet completed the online module should do so immediately.","The laboratory has been equipped with instruments capable of measuring extremely small variations in temperature.","Delegates attending the conference will receive a certificate confirming their participation in the programme.","The company has announced that it will withdraw from three markets by the end of the year.","Evidence from a number of independent sources supports the conclusion reached by the original researchers.","Anyone requiring assistance with the application process should contact the admissions office directly.","The proposal was rejected on the grounds that it did not represent value for money.","Considerable attention has been devoted to understanding how these organisms adapt to changing conditions.","The new regulations will apply to all commercial premises with more than fifty employees.","Feedback from the pilot programme has been overwhelmingly positive across all participating institutions.","Historians have long debated the extent to which economic factors influenced these political developments.","The library holds an extensive collection of manuscripts dating from the fifteenth century onwards.","Applicants are advised that references will be sought before any offer of employment is confirmed.","It remains unclear whether the observed differences are attributable to the intervention or to other factors.","The department has committed to reducing its energy consumption by twenty per cent within five years.","Passengers travelling on services affected by the disruption may claim a refund through the operator's website.","The authors acknowledge that their sample was not representative of the wider population under study.","Several members of the committee expressed reservations about the timetable proposed by the working group."]};
+
+const REORDER=[
+{items:[
+ "However, uptake has been slower than the council anticipated, with only 12 per cent of eligible households registering in the first six months.",
+ "The council introduced a food waste collection scheme in April 2023.",
+ "To address this, a door-to-door information campaign was launched the following spring.",
+ "Residents were provided with a free caddy and a supply of compostable liners."],
+ order:[1,3,0,2],
+ why:"B introduces the scheme with no back-reference. D gives what residents received. A opens with \"However\" so it must follow a positive statement. C opens with \"To address this\", pointing back to the low uptake in A."},
+{items:[
+ "These delays have prompted several tenants to withhold payment until the work is completed.",
+ "The refurbishment of the office block was originally scheduled for completion in March.",
+ "Supply shortages and adverse weather have pushed the finish date back by at least four months.",
+ "The landlord has since agreed to a partial rent reduction for the affected period."],
+ order:[1,2,0,3],
+ why:"B sets the original schedule. C creates the delays. A opens with \"These delays\", so it must follow C. D uses \"since\", marking a response to A."},
+{items:[
+ "The airline says the change will reduce boarding times by an average of four minutes per flight.",
+ "Passengers travelling with hand luggage only will now board first.",
+ "Critics have argued that the policy disadvantages families, who are more likely to check bags.",
+ "A major European carrier has announced changes to its boarding procedure."],
+ order:[3,1,0,2],
+ why:"D uses the indefinite \"a major European carrier\" — first mention, so it opens. B gives the specific change. A gives the airline's justification. C gives the counter-argument. Announcement, detail, justification, criticism."}];
+
+const EMAIL_PROMPTS=[
+"Request information about a training course advertised by your employer.",
+"Complain to a landlord about a heating system that has not been repaired.",
+"Apologise to a client for sending an incorrect invoice.",
+"Decline an invitation to speak at a conference, and suggest a colleague instead.",
+"Apply for a role advertised internally at your organisation.",
+"Give feedback to a supplier whose service has recently declined.",
+"Request a reference from a former manager.",
+"Follow up on an email you sent three weeks ago that has not been answered.",
+"Ask your neighbour to move a vehicle blocking your access.",
+"Request a refund for a conference you can no longer attend.",
+"Report a recurring IT fault to your organisation's help desk.",
+"Recommend a colleague for a promotion.",
+"Confirm arrangements for a client visit next month.",
+"Cancel a hotel booking and ask about the cancellation policy.",
+"Introduce yourself to a new team you are about to join.",
+"Suggest a change to a process that is causing delays.",
+"Explain a delay on a project to a client, and set a new date.",
+"Ask your bank to explain an unexpected charge on your account.",
+"Respond to a customer who has complained about a late delivery.",
+"Request an extension on a deadline, giving reasons.",
+"Thank a team formally after the completion of a project.",
+"Ask a course provider whether a qualification is recognised in another country.",
+"Complain to a transport operator about repeated cancellations.",
+"Write to a colleague explaining why you disagree with a proposed change."];
+
+const RUBRIC=[
+["Content","Missed a bullet","All bullets, thin on one","All bullets, developed"],
+["Form","Outside 80–120","80–85 or 115–120","90–112"],
+["Tone","Register mismatch","Slightly off","Opener, closer and body all matched"],
+["Grammar","Errors impede meaning","1–2 minor errors","Clean, with subordinate + modal + passive"],
+["Vocabulary","Repetitive, basic","Adequate","2–3 precise collocations"],
+["Spelling","Any error","—","None"]];
+
+const MODELS=[
+{t:"Formal complaint · 111 words",
+ p:"You ordered a laptop three weeks ago and it has not arrived. Write to customer services. Explain what you ordered, describe the problem, say what you want them to do.",
+ b:"Dear Sir or Madam,<br><br>I am writing regarding order number 84720, placed on 14 July for a Lenovo ThinkPad laptop.<br><br>The confirmation email stated that delivery would take place within five working days. Three weeks have now passed and I have received neither the item nor any explanation for the delay. Although I have telephoned your customer service line twice, I have not been given a revised delivery date.<br><br>I would be grateful if you could confirm the current status of the order within five working days. If the item cannot be dispatched by 20 August, I would like to request a full refund.<br><br>I look forward to your response.<br><br>Yours faithfully,<br>Esther Akashie",
+ n:"Three bullets addressed. One concession clause, one modal request, one conditional. Formal opener and closer matched."},
+{t:"Semi-formal request · 108 words",
+ p:"You want two weeks of unpaid leave for a family event abroad. Write to your manager. Give the dates, explain the reason, say how your work will be covered.",
+ b:"Dear Ms Popescu,<br><br>I am writing to request two weeks of unpaid leave from 12 to 26 October.<br><br>My sister is getting married in Lagos and, as I am one of the organisers, I need to be there for the two weeks leading up to the ceremony. I appreciate that October is a busy period for the team.<br><br>To minimise disruption, I have spoken to Andrei, who has agreed to cover my accounts while I am away. I would also complete the quarterly report before I leave rather than after.<br><br>Would it be possible to discuss this at our meeting on Thursday?<br><br>Kind regards,<br>Esther",
+ n:"Note the concession sentence acknowledging the manager's position. That reads as appropriacy and it scores."},
+{t:"Informal, to a colleague · 99 words",
+ p:"A colleague covered a client meeting for you at short notice. Thank them, explain why you could not attend, offer to return the favour.",
+ b:"Hi Andrei,<br><br>Thanks so much for stepping in at the client meeting on Thursday. I really appreciate it.<br><br>I'd been booked onto the compliance training that morning and only realised the clash the night before, which left almost no time to rearrange anything. I know it was short notice and I'm grateful you were willing to take it on.<br><br>If you need cover for anything over the next few weeks, just let me know and I'll sort it. I'm around for the whole of September.<br><br>Thanks again.<br><br>Best,<br>Esther",
+ n:"Contractions and short sentences are right for a peer. It still carries a subordinate clause and a conditional."}];
+
+const FUNC=[
+["Stating purpose","I am writing to enquire about… · I am writing with regard to… · I am writing to request… · I am writing in response to your email of 3 August… · I am writing to bring to your attention…"],
+["Requesting","I would be grateful if you could… · Would it be possible to… · I would appreciate it if you could… · Could you please confirm whether… · I wonder whether you might be able to…"],
+["Complaining","I would like to raise a concern regarding… · Unfortunately, the service did not meet the standard I had expected. · I was disappointed to find that… · This has caused considerable inconvenience."],
+["Apologising","I apologise for any inconvenience this may have caused. · I am sorry for the delay in responding. · Please accept my apologies for the oversight."],
+["Declining","Unfortunately, I will not be able to… · Much as I would like to attend, I am afraid… · Regrettably, I must decline…"],
+["Proposing an alternative","As an alternative, I would suggest… · Would [date] be a suitable alternative? · I would be happy to [alternative] instead."],
+["Closing","I look forward to hearing from you. · Please let me know if you require any further information. · Thank you for your assistance with this matter. · I would appreciate a response at your earliest convenience."]];
+
+const SWT=[
+{t:"Remote working",
+ p:"Remote working was, until 2020, a marginal arrangement offered by a minority of employers and taken up by fewer still. The pandemic changed that almost overnight, and the shift has proved durable: five years on, a substantial proportion of office-based staff in Western Europe continue to work from home for at least part of the week.<br><br>Employers have found the picture more complicated than either the early enthusiasts or the early sceptics predicted. Productivity, measured by output per worker, has generally held steady or improved slightly in roles with clearly defined deliverables. But organisations report real difficulty in maintaining informal knowledge transfer, the sort that used to happen in corridors and over coffee, and this appears to affect junior staff disproportionately. New employees onboarded remotely take longer to reach full effectiveness and report weaker attachment to their organisations.<br><br>The response in most large firms has been a hybrid compromise, typically two or three fixed days in the office. This satisfies few people completely. Managers complain that it delivers neither the collaboration benefits of full attendance nor the flexibility staff actually value, and researchers point out that mandated office days often become days of individual work conducted in a noisier environment.",
+ m:"Although productivity has largely held steady under remote working, the text argues that organisations struggle to sustain informal knowledge transfer and to onboard junior staff effectively, demonstrating that hybrid compromises satisfy neither managers seeking collaboration nor employees seeking genuine flexibility.",
+ n:"Template A, 44 words. The concession clause carries the productivity finding so it does not compete with the main claim."},
+{t:"Food waste collection",
+ p:"Local authorities across the UK have spent a decade encouraging households to separate food waste from general refuse, with mixed results. Where collection is weekly, free, and accompanied by a supply of compostable liners, participation rates above 60 per cent are common. Where any one of those three conditions is absent, rates fall sharply — often below 20 per cent.<br><br>The evidence suggests that convenience matters far more than environmental attitude. Surveys consistently find that residents who do not participate express broadly the same level of concern about waste as those who do; what separates them is whether the caddy is easy to use and whether the liners run out. One council that switched from providing free liners to charging fifty pence per roll saw participation fall by a third within four months.<br><br>This has implications well beyond food waste. Behaviour-change campaigns aimed at households routinely assume that information and persuasion are the binding constraints. The food waste data suggests that in many cases they are not, and that removing small practical frictions produces larger effects than any amount of messaging.",
+ m:"Household participation in food waste collection depends far more on practical convenience than on environmental attitude. This is shown by the sharp fall in participation when free liners were withdrawn, suggesting that removing small frictions outperforms information campaigns in changing behaviour.",
+ n:"Template B, 41 words. Two sentences, each grammatically complete. Safer than Template A if you are prone to run-ons."},
+{t:"The four-day week",
+ p:"The four-day week has moved from fringe proposal to mainstream trial in under a decade. The largest coordinated pilot, involving 61 UK companies in 2022, reported that 92 per cent chose to continue the arrangement after the trial ended, with revenue broadly flat and staff turnover down sharply.<br><br>Critics note that these results should be treated with caution. Participating companies self-selected, meaning they were disproportionately knowledge-based firms already confident the model could work. Manufacturing, healthcare and hospitality — sectors where output is closely tied to hours present — were barely represented. There is also a measurement problem: several participating firms reported that staff simply worked more intensively, which raises questions about whether the gains are sustainable over years rather than months.<br><br>Advocates respond that the burden of proof has shifted. The five-day week is itself a historical artefact rather than a natural law, and the pilot data at minimum establishes that a shorter week is workable in a substantial part of the modern economy.",
+ m:"Although four-day week trials report high retention and stable revenue, the text notes that participating firms self-selected from knowledge-based sectors and that intensified work may make gains unsustainable, suggesting the evidence establishes feasibility in part of the economy rather than general viability.",
+ n:"Template A, 43 words. Both criticisms compressed into one clause, which is what keeps it under 50."}];
+
+const SST=[
+{t:"Induced demand",
+ x:"One of the more surprising findings in transport research over the last twenty years concerns what happens when you widen a road. The intuition is straightforward: more lanes, more capacity, less congestion. What actually happens, repeatedly and across very different cities, is that congestion returns to roughly its previous level within about five years. The mechanism is called induced demand. When a route becomes faster, people who had been avoiding it — travelling at different times, taking different routes, or not travelling at all — start using it. The new capacity fills up. This does not mean road widening achieves nothing; more people are making more journeys, which has real economic value. But it does mean that widening a road is not an effective way to reduce the time any individual driver spends in traffic, which is usually the reason it was funded.",
+ m:"The speaker explains that widening roads fails to reduce congestion because faster routes attract additional drivers, noting that the extra journeys have economic value despite unchanged individual travel times.",
+ n:"27 words. One main idea plus one qualifier. The concession about economic value is the qualifier."},
+{t:"Learning styles",
+ x:"There's a persistent belief that people learn best when material is presented in the format that matches their preferred learning style — visual, auditory, or kinaesthetic. It's one of the most widely held ideas in education, and it has almost no experimental support. The critical test is straightforward: teach matched and mismatched groups the same material and see whether the matched group performs better. Dozens of studies have run this design. The matched groups do not outperform the mismatched ones. What does affect learning outcomes is whether the format suits the material rather than the learner. Diagrams work better for spatial relationships regardless of who is looking at them. The persistence of the learning styles idea probably says more about how appealing it feels than about how learning works.",
+ m:"The speaker explains that matching teaching to individual learning styles has no experimental support, noting that the format's suitability to the material matters more than the learner's preference.",
+ n:"26 words. Resist the urge to include the diagram example — there is no room and it is not the main idea."},
+{t:"Antibiotic resistance",
+ x:"Antibiotic resistance is often described as a future threat, which slightly misrepresents the problem. It is already causing an estimated 1.2 million deaths a year directly. What makes it unusual as a public health challenge is that the incentives are badly misaligned at every level. For an individual doctor facing an uncertain diagnosis, prescribing an antibiotic is the cautious choice. For a farmer, routine antibiotic use in livestock reduces losses. For a pharmaceutical company, developing a new antibiotic is commercially unattractive precisely because the ideal new drug would be held in reserve and barely sold. Each of these decisions is rational on its own terms. Collectively they produce an outcome nobody wants, which is why the problem has proved resistant to appeals to responsibility.",
+ m:"The speaker explains that antibiotic resistance already causes over a million annual deaths, noting that rational individual incentives for doctors, farmers and manufacturers collectively produce an outcome nobody intends.",
+ n:"28 words. Three actors compressed into one list. That compression is what makes the count work."}];
+
+const COLL=[
+["Verb + noun","conduct research, a survey, an interview, an inspection | carry out a task, an assessment, an investigation, repairs | reach a decision, an agreement, a conclusion, a target | meet a deadline, a requirement, a demand, expectations, standards | raise concerns, awareness, an issue, a question, funds | draw a conclusion, a comparison, attention, a distinction | pose a threat, a risk, a question, a challenge | play a role, a part | take precedence, responsibility, effect, steps, measures, precautions | make progress, an effort, arrangements, a contribution, an exception | issue a statement, a warning, a refund, a permit | pay attention, a visit, a fine, a deposit | put forward a proposal, a suggestion, a case | set a target, a deadline, a precedent, guidelines | address an issue, a concern, a complaint, a shortfall | implement a policy, a system, changes, a strategy | launch an initiative, a campaign, a product, an investigation | submit an application, a report, a claim, a request | provide access, support, evidence, assistance, cover | gain access, experience, insight, approval | lodge a complaint, an appeal | grant permission, access, an extension | waive a fee, a requirement, a right | incur costs, a penalty, a charge | exceed a limit, expectations, capacity | fulfil an obligation, a requirement, a role"],
+["Verb + preposition","comply with | adhere to | account for | result in / result from | lead to | contribute to | depend on | consist of | benefit from | rely on | deal with | apply for (a job) / apply to (an organisation) | amount to | refer to | object to | cater for | liaise with | consult with | allow for | cope with | resort to | engage in | participate in | specialise in | insist on | focus on | impose on | differ from | arise from | stem from | range from … to"],
+["Adjective + preposition","eligible for | responsible for | liable for | suitable for | consistent with | compatible with | relevant to | subject to | entitled to | capable of | aware of | indicative of | prone to | exposed to | dependent on | based on | concerned about | familiar with | comparable to"],
+["Adjective + noun","significant impact, increase, difference | considerable amount, effort, delay | substantial evidence, increase | growing concern, demand | widespread use, support | vital role | crucial factor | strict guidelines, regulations | valid reason, point, claim | viable option, alternative | reasonable expectation, notice | prior notice, experience, approval | adverse effect, weather | potential risk, benefit | key priority | ongoing basis | annual review | prompt response, payment | formal complaint, agreement | mutual agreement, benefit | minor amendment | outstanding balance | immediate effect | unforeseen circumstances"],
+["Adverb + adjective","highly likely, effective, unlikely, recommended | widely regarded, available, used | strictly prohibited, confidential, necessary | fully aware, refundable, operational | entirely dependent | particularly important | increasingly common | readily available | reasonably priced | seriously affected | heavily reliant | closely linked | directly responsible | genuinely concerned"],
+["Fixed prepositional phrases","in accordance with | on behalf of | in response to | with regard to | in the event of | subject to | prior to | due to | in line with | at short notice | in advance | on request | under review | in effect | with immediate effect | for the foreseeable future | in the interim | to the best of my knowledge | in the first instance"],
+["Confusable pairs","effect (noun) / affect (verb) | ensure (guarantee) / insure (cover financially) / assure (reassure a person) | comprise (no 'of') / composed of / consist of | principle (rule) / principal (main) | practise (verb) / practice (noun) | economic (the economy) / economical (cost-saving) | historic (significant) / historical (relating to history) | continual (repeated) / continuous (unbroken) | considerable (large) / considerate (thoughtful) | effective (achieves the aim) / efficient (without waste) | respectively (in the order given) / respectfully (with respect) | eligible (qualified) / illegible (unreadable) | complement (completes) / compliment (praises) | among (more than two) / between (two) | fewer (countable) / less (uncountable) | number of (countable) / amount of (uncountable) | raise (takes an object) / rise (does not) | lay (takes an object) / lie (does not)"]];
+
+const SPELL="accommodation acknowledge acquire apparent appreciate argument assessment beginning believe beneficial business calendar category colleague commitment committee conscious consensus convenience correspondence definitely dependent disappoint embarrass environment equipment especially exaggerate excellent existence familiar foreign government guarantee harass immediate independent liaise maintenance necessary noticeable occasion occurred opportunity particularly permanent personnel possession precede privilege procedure professional questionnaire receive recommend reference referred relevant restaurant rhythm schedule separate similar sincerely successful sufficient thorough threshold transferred unfortunately until vehicle Wednesday withhold".split(" ");
+const SPELL_UK="organisation recognise analyse programme licence(n)/license(v) practice(n)/practise(v) centre colour favour labour travelled cancelled enrolment fulfil judgement enquiry".split(" ");
+
+const GRAM=[
+["Articles","Countable singular nouns need an article. <i>request extension</i> → <i>request <b>an</b> extension</i>. Abstract uncountables usually take none: <i>provide access</i>, <i>raise awareness</i>."],
+["Subject–verb agreement across a phrase","<i>The list of outstanding items <b>were</b> attached</i> → <i>was</i>. The subject is <i>list</i>, not <i>items</i>."],
+["Comma splices","<i>The delivery has not arrived, I would like a refund</i> → full stop, semicolon, or conjunction. The most common structural error in timed writing."],
+["Tense consistency","Do not drift between past and present inside a paragraph without a reason."],
+["Conditionals","<i>If the item cannot be dispatched by Friday, I would like a refund</i> is correct for a polite request. <i>If the item could not be dispatched, I will…</i> is not."],
+["Countable vs uncountable","fewer items / less time · number of complaints / amount of work. Advice, information, equipment, feedback, research and staff are uncountable — no plural <i>-s</i>."],
+["Preposition after verb","<i>discuss about</i> and <i>emphasise on</i> are both wrong. Use the fixed list in the collocation bank."],
+["Prepositions with time","on Monday · in October · at 3pm · by Friday (deadline) · until Friday (duration) · within five working days"],
+["Adverb word order","<i>I have already sent the report</i>, not <i>I already have sent</i>."],
+["Passive for register","<i>The order was dispatched on 3 August</i> often beats <i>We dispatched the order</i> in a formal email. Use one per email for grammatical range."]];
+
+const PLAN=[
+{ph:"Phase 1 — Build",dates:"11–31 Aug",note:"Heaviest phase, deliberately front-loaded before the thesis crunch. Daily core plus one focus block of 45–60 minutes.",
+ rows:[["Mon","Write Email × 2, full 9-minute timing, self-marked on the rubric"],["Tue","Reading double block — Reading FIB × 15, Re-order × 6"],["Wed","Write Email × 1 + grammar repair item of the week + spelling drill"],["Thu","Reading double block — R&W FIB × 20 extra, MCQ multiple × 6"],["Fri","SWT × 3 + SST × 3, full timing, word-counted"],["Sat","Full timed mock + same-day error analysis (2.5–3 hrs)"],["Sun","Rework every item missed on Saturday. Speaking maintenance 15 min. Rest."]],
+ mocks:"Mocks: Sat 15 Aug · Sat 22 Aug · Sat 29 Aug",
+ mile:"Milestone 31 Aug: Reading ≥ 76, Writing ≥ 84. If Reading is still under 74, cut Writing to 20% and give Reading 60%."},
+{ph:"Phase 2 — Consolidate",dates:"1–13 Sep",note:"Templates should now be reflexive. This phase is consistency under time pressure.",
+ rows:[["Mon","Write Email × 2 + rubric self-mark"],["Tue","Full Reading section, timed at 30 minutes"],["Wed","SWT × 3 + SST × 2"],["Thu","Full Reading section, timed at 30 minutes"],["Fri","Full Listening section, timed"],["Sat","Full timed mock + error analysis"],["Sun","Repair on whichever of Reading or Writing is further from target. Speaking 15 min."]],
+ mocks:"Mocks: Sat 5 Sep · Sat 12 Sep",
+ mile:"Milestone 13 Sep: two consecutive mocks with Reading ≥ 78 and Writing ≥ 88, or a named single-task gap you can point to."},
+{ph:"Phase 3 — Taper",dates:"14–20 Sep",note:"Volume drops. You are protecting form, not building it.",
+ rows:[["Mon 14","Daily core + Write Email × 2"],["Tue 15","Full timed mock at your actual exam clock time"],["Wed 16","Error log review only. 45 minutes maximum. No new drilling."],["Thu 17","Daily core + one timed Reading section"],["Fri 18","Full timed mock at exam clock time"],["Sat 19","Daily core + recite all templates from memory"],["Sun 20","Daily core only. 30 minutes. Then stop."]],
+ mocks:"",mile:""},
+{ph:"Phase 4 — Exam window",dates:"21–23 Sep",note:"",
+ rows:[["Mon 21","No study. Confirm ID, centre address, arrival time. Align sleep to exam time."],["Tue 22 / Wed 23","Exam. Arrive 30 minutes early with passport. Locker provided. Results usually within 48 hours."]],
+ mocks:"",mile:""}];
+
+/* ============ nav ============ */
+const TABS=[["today","Today"],["fib","Fill in the Blanks"],["wfd","Dictation"],["reorder","Re-order"],["email","Write Email"],["sum","Summaries"],["ref","Reference"],["plan","Plan"],["log","Log"]];
+document.getElementById('nav').innerHTML = TABS.map((t,i)=>
+  `<button class="${i===0?'on':''}" onclick="go('${t[0]}',this)">${t[1]}</button>`).join('');
+function go(id,btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.getElementById('s-'+id).classList.add('on');
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ============ rail ============ */
+function drawRail(){
+  const lo=10,hi=90;
+  document.getElementById('bars').innerHTML = SKILLS.map(s=>{
+    const v=current[s.k], pct=Math.max(0,Math.min(100,(v-lo)/(hi-lo)*100));
+    const tp=(s.target-lo)/(hi-lo)*100;
+    const gap=s.target-v;
+    const st = gap>0 ? `<span class="gap">+${gap} short</span>` : `<span class="clear">clear</span>`;
+    return `<div class="bar-row">
+      <div class="bar-label">${s.name.slice(0,4)}</div>
+      <div class="track">
+        <div class="fill" style="width:${pct}%;background:var(${s.c})"></div>
+        <div class="thresh" style="left:${tp}%" data-t="${s.target}"></div>
+      </div>
+      <div class="bar-val">${v} &middot; ${st}</div></div>`;
+  }).join('');
+  const d=Math.max(0,Math.ceil((EXAM-new Date())/864e5));
+  document.getElementById('days').textContent=d;
+}
+
+/* ============ today ============ */
+const CORE=[["fibcore","Fill in the Blanks × 20 — self-scored, misses logged (20 min)"],["wfdcore","Write from Dictation × 10 — self-scored per word (10 min)"]];
+async function drawToday(){
+  const today=new Date();
+  document.getElementById('todayDate').textContent =
+    today.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const key='core-'+today.toDateString();
+  const st=await get(key,{});
+  document.getElementById('coreList').innerHTML = CORE.map(c=>
+    `<li><input type="checkbox" class="chk" ${st[c[0]]?'checked':''} onchange="coreTick('${key}','${c[0]}',this)">
+     <span id="lbl-${c[0]}" class="${st[c[0]]?'done':''}">${c[1]}</span></li>`).join('');
+  const dow=today.getDay();
+  const m=new Date(2026,7,31), s2=new Date(2026,8,13);
+  let rows = today<=m ? PLAN[0].rows : (today<=s2 ? PLAN[1].rows : PLAN[2].rows);
+  const idx = dow===0?6:dow-1;
+  const f = rows[Math.min(idx,rows.length-1)];
+  document.getElementById('focusCard').innerHTML =
+    `<h3 style="margin-top:0">Focus block &mdash; ${f[0]}</h3><p style="margin-bottom:0">${f[1]}</p>`;
+}
+async function coreTick(key,id,el){
+  const st=await get(key,{}); st[id]=el.checked; await put(key,st);
+  document.getElementById('lbl-'+id).className = el.checked?'done':'';
+}
+
+/* ============ FIB ============ */
+let fibCur='A';
+function fibSet(k){
+  fibCur=k;
+  document.getElementById('fibScore').innerHTML='';
+  document.getElementById('fibBody').innerHTML = FIB[k].map((q,i)=>{
+    const parts=q[0].split('___');
+    return `<div class="q"><span class="qn">${String(i+1).padStart(2,'0')}</span>${parts[0]}<input type="text" class="blank" id="fib${i}" autocomplete="off">${parts[1]||''}<div class="ans" id="fiba${i}"></div></div>`;
+  }).join('');
+}
+function fibCheck(){
+  const set=FIB[fibCur]; let ok=0;
+  set.forEach((q,i)=>{
+    const el=document.getElementById('fib'+i);
+    const v=el.value.trim().toLowerCase();
+    const hit=q[1].some(a=>a.toLowerCase()===v);
+    el.className='blank '+(hit?'right':'wrong');
+    if(hit) ok++;
+    const a=document.getElementById('fiba'+i);
+    a.className='ans show';
+    a.textContent = hit ? '✓' : '→ '+q[1].join(' / ');
+  });
+  const pct=Math.round(ok/set.length*100);
+  const cls = pct>=80?'good':(pct>=60?'mid':'poor');
+  document.getElementById('fibScore').innerHTML =
+    `<div class="score ${cls}">${ok} of ${set.length} &middot; ${pct}%${pct<80?' — log every miss to the collocation bank':''}</div>`;
+}
+
+/* ============ WFD ============ */
+let wfdS='', wfdDone=0, wfdPts=0, wfdTot=0;
+function wfdPool(){
+  const m=document.getElementById('wfdLen').value;
+  return m==='all' ? [...WFD.short,...WFD.med,...WFD.long] : WFD[m];
+}
+function wfdNext(){
+  const p=wfdPool();
+  wfdS = p[Math.floor(Math.random()*p.length)];
+  document.getElementById('wfdIn').value='';
+  document.getElementById('wfdOut').innerHTML='';
+  document.getElementById('wfdCount').textContent='';
+}
+function wfdSpeak(){
+  if(!wfdS) wfdNext();
+  if(!('speechSynthesis' in window)){
+    document.getElementById('wfdOut').innerHTML='<div class="score poor">This browser cannot read the sentence aloud. Use "Show sentence" and have someone read it to you.</div>';
+    return;
+  }
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(wfdS);
+  u.rate=0.92; u.lang='en-GB';
+  speechSynthesis.speak(u);
+}
+function norm(s){return s.toLowerCase().replace(/[^a-z0-9'\s-]/g,'').split(/\s+/).filter(Boolean);}
+function lcs(a,b){
+  const d=Array(a.length+1).fill(0).map(()=>Array(b.length+1).fill(0));
+  for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)
+    d[i][j]= a[i-1]===b[j-1] ? d[i-1][j-1]+1 : Math.max(d[i-1][j],d[i][j-1]);
+  return d[a.length][b.length];
+}
+function wfdScore(){
+  if(!wfdS){ wfdNext(); return; }
+  const target=norm(wfdS), typed=norm(document.getElementById('wfdIn').value);
+  const got=lcs(target,typed);
+  const pct=Math.round(got/target.length*100);
+  wfdDone++; wfdPts+=got; wfdTot+=target.length;
+  const missed=target.filter(w=>!typed.includes(w));
+  const cls = pct>=95?'good':(pct>=80?'mid':'poor');
+  document.getElementById('wfdOut').innerHTML =
+    `<div class="score ${cls}">${got} of ${target.length} words in sequence &middot; ${pct}%
+     ${missed.length?'<br>missed: '+missed.join(', '):''}</div>
+     <p class="tiny" style="margin-top:8px">${wfdS}</p>`;
+  document.getElementById('wfdTally').textContent =
+    `${wfdDone} sentences · ${Math.round(wfdPts/wfdTot*100)}% words correct`;
+}
+function wfdReveal(){
+  if(!wfdS) wfdNext();
+  document.getElementById('wfdOut').innerHTML=`<p class="tiny" style="margin-top:10px">${wfdS}</p>`;
+}
+document.getElementById('wfdIn').addEventListener('input',e=>{
+  const n=norm(e.target.value).length;
+  document.getElementById('wfdCount').textContent=n+' words typed';
+});
+
+/* ============ reorder ============ */
+let roSet=0, roPick=[];
+function roLoad(i){
+  roSet=i; roPick=[];
+  document.getElementById('roOut').innerHTML='';
+  roDraw();
+}
+function roDraw(){
+  const s=REORDER[roSet];
+  document.getElementById('roBody').innerHTML = s.items.map((t,i)=>{
+    const p=roPick.indexOf(i);
+    return `<div class="reorder-item ${p>=0?'picked':''}" onclick="roTap(${i})">
+      <span class="pos">${p>=0?p+1:'·'}</span><span>${t}</span></div>`;
+  }).join('') + `<div class="row"><button class="act" onclick="roCheck()">Check order</button>
+    <button class="act sub" onclick="roLoad(${roSet})">Clear</button></div>`;
+}
+function roTap(i){
+  const p=roPick.indexOf(i);
+  if(p>=0) roPick.splice(p,1); else roPick.push(i);
+  roDraw();
+}
+function roCheck(){
+  const s=REORDER[roSet];
+  if(roPick.length!==s.items.length){
+    document.getElementById('roOut').innerHTML='<div class="score mid">Select all four paragraphs in order first.</div>';
+    return;
+  }
+  let pairs=0;
+  for(let i=0;i<s.order.length-1;i++){
+    const a=roPick.indexOf(s.order[i]), b=roPick.indexOf(s.order[i+1]);
+    if(b===a+1) pairs++;
+  }
+  const exact = roPick.join()===s.order.join();
+  const cls = exact?'good':(pairs>=2?'mid':'poor');
+  document.getElementById('roOut').innerHTML =
+    `<div class="score ${cls}">${pairs} of 3 adjacent pairs correct${exact?' · full sequence':''}</div>
+     <div class="card" style="margin-top:10px"><h3 style="margin-top:0">Why</h3><p style="margin-bottom:0">${s.why}</p></div>`;
+}
+
+/* ============ email ============ */
+let emT=null, emLeft=540;
+function emTick(){
+  emLeft--;
+  const m=Math.floor(emLeft/60), s=String(emLeft%60).padStart(2,'0');
+  const el=document.getElementById('emTimer');
+  el.textContent=`${m}:${s}`;
+  el.className = emLeft<=90?'timer low':'timer';
+  if(emLeft<=0){ clearInterval(emT); emT=null; el.textContent='0:00'; document.getElementById('emBtn').textContent='Time'; }
+}
+function emStart(){
+  if(emT){ clearInterval(emT); emT=null; document.getElementById('emBtn').textContent='Resume'; return; }
+  emT=setInterval(emTick,1000);
+  document.getElementById('emBtn').textContent='Pause';
+}
+function emReset(){
+  clearInterval(emT); emT=null; emLeft=540;
+  document.getElementById('emTimer').textContent='9:00';
+  document.getElementById('emTimer').className='timer';
+  document.getElementById('emBtn').textContent='Start 9:00';
+}
+let emIdx=-1;
+function emPrompt(){
+  emIdx=(emIdx+1)%EMAIL_PROMPTS.length;
+  document.getElementById('emPromptText').textContent=EMAIL_PROMPTS[emIdx];
+  document.getElementById('emN').textContent=`prompt ${emIdx+1} of ${EMAIL_PROMPTS.length}`;
+  document.getElementById('emIn').value=''; emCount(); emReset();
+}
+function emCount(){
+  const n=document.getElementById('emIn').value.trim().split(/\s+/).filter(Boolean).length;
+  const el=document.getElementById('emWc');
+  el.textContent=n+' words';
+  el.className='wc '+(n===0?'':(n<80||n>120?'out':(n<90||n>112?'edge':'in')));
+}
+document.getElementById('rubric').innerHTML =
+  '<div class="scroll"><table><tr><th>Criterion</th><th>0</th><th>1</th><th>2</th><th></th></tr>'+
+  RUBRIC.map((r,i)=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td>
+   <td><select id="rb${i}" onchange="rbSum()" style="width:56px;padding:3px">
+   <option value="">–</option><option>0</option><option>1</option><option>2</option></select></td></tr>`).join('')+
+  '</table></div>';
+function rbSum(){
+  let t=0,n=0;
+  RUBRIC.forEach((r,i)=>{const v=document.getElementById('rb'+i).value; if(v!==''){t+=+v;n++;}});
+  if(n<RUBRIC.length){ document.getElementById('rubricOut').innerHTML=''; return; }
+  const cls=t>=11?'good':(t>=9?'mid':'poor');
+  document.getElementById('rubricOut').innerHTML =
+    `<div class="score ${cls}">${t} of 12${t<11?' — rewrite this one today':' — banked'}</div>`;
+}
+document.getElementById('funcBank').innerHTML = FUNC.map(f=>
+  `<div class="card" style="padding:13px 16px"><h3 style="margin:0 0 5px">${f[0]}</h3><p class="muted" style="margin:0">${f[1]}</p></div>`).join('');
+document.getElementById('models').innerHTML = MODELS.map(m=>
+  `<div class="card W"><h3 style="margin-top:0">${m.t}</h3>
+   <p class="tiny" style="margin-bottom:9px"><b>Prompt:</b> ${m.p}</p>
+   <div class="passage">${m.b}</div>
+   <p class="tiny" style="margin-bottom:0">${m.n}</p></div>`).join('');
+
+/* ============ summaries ============ */
+function swtLoad(i){
+  const s=SWT[i];
+  document.getElementById('swtBody').innerHTML=
+   `<div class="card R"><h3 style="margin-top:0">${s.t}</h3>
+    <div class="passage">${s.p}</div>
+    <textarea id="swtIn" rows="4" placeholder="Your summary — 25 to 50 words" oninput="cnt('swtIn','swtWc',25,50,38,44)"></textarea>
+    <div class="row" style="justify-content:space-between"><span class="wc" id="swtWc">0 words</span>
+    <button class="act sub" onclick="document.getElementById('swtM').style.display='block'">Show model</button></div>
+    <div id="swtM" style="display:none"><hr><p><b>Model</b></p><div class="passage">${s.m}</div>
+    <p class="tiny" style="margin-bottom:0">${s.n}</p></div></div>`;
+}
+function sstLoad(i){
+  const s=SST[i];
+  document.getElementById('sstBody').innerHTML=
+   `<div class="card L"><h3 style="margin-top:0">${s.t}</h3>
+    <div class="row" style="margin-top:0"><button class="act" onclick="sstPlay(${i})">Play talk</button>
+    <button class="act sub" onclick="speechSynthesis.cancel()">Stop</button>
+    <button class="act sub" onclick="document.getElementById('sstX').style.display='block'">Show transcript</button></div>
+    <p class="tiny" style="margin-top:8px">Listen once. Notes: TOPIC / CLAIM / EXAMPLE, one or two words each.</p>
+    <div id="sstX" style="display:none"><div class="passage">${s.x}</div></div>
+    <textarea id="sstIn" rows="3" placeholder="Your summary — 20 to 30 words" oninput="cnt('sstIn','sstWc',20,30,24,28)" style="margin-top:10px"></textarea>
+    <div class="row" style="justify-content:space-between"><span class="wc" id="sstWc">0 words</span>
+    <button class="act sub" onclick="document.getElementById('sstM').style.display='block'">Show model</button></div>
+    <div id="sstM" style="display:none"><hr><p><b>Model</b></p><div class="passage">${s.m}</div>
+    <p class="tiny" style="margin-bottom:0">${s.n}</p></div></div>`;
+}
+function sstPlay(i){
+  if(!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(SST[i].x);
+  u.rate=0.95; u.lang='en-GB';
+  speechSynthesis.speak(u);
+}
+function cnt(inId,outId,lo,hi,tlo,thi){
+  const n=document.getElementById(inId).value.trim().split(/\s+/).filter(Boolean).length;
+  const el=document.getElementById(outId);
+  el.textContent=`${n} words`;
+  el.className='wc '+(n===0?'':(n<lo||n>hi?'out':(n<tlo||n>thi?'edge':'in')));
+}
+
+/* ============ reference ============ */
+function drawColl(f){
+  const q=(f||'').toLowerCase();
+  document.getElementById('colBody').innerHTML = COLL.map(c=>{
+    let items=c[1].split('|').map(s=>s.trim());
+    if(q) items=items.filter(s=>s.toLowerCase().includes(q));
+    if(!items.length) return '';
+    return `<div class="card" style="padding:13px 16px"><h3 style="margin:0 0 7px">${c[0]}</h3>
+      <p class="muted" style="margin:0;line-height:1.9">${items.map(s=>`<span class="pill">${s}</span>`).join('')}</p></div>`;
+  }).join('') || '<p class="muted">No match in the bank.</p>';
+}
+function colFilter(){ drawColl(document.getElementById('colSearch').value); }
+document.getElementById('spellBody').innerHTML =
+  `<div class="card" style="padding:13px 16px"><p style="margin:0;line-height:2">${SPELL.map(w=>`<span class="pill">${w}</span>`).join('')}</p></div>
+   <div class="card" style="padding:13px 16px"><h3 style="margin:0 0 7px">UK spellings — stay consistent</h3>
+   <p style="margin:0;line-height:2">${SPELL_UK.map(w=>`<span class="pill">${w}</span>`).join('')}</p></div>`;
+document.getElementById('gramBody').innerHTML = GRAM.map((g,i)=>
+  `<div class="card W" style="padding:13px 16px"><h3 style="margin:0 0 4px"><span class="num tiny">${String(i+1).padStart(2,'0')}</span> &nbsp;${g[0]}</h3>
+   <p style="margin:0">${g[1]}</p></div>`).join('');
+
+/* ============ plan ============ */
+document.getElementById('planBody').innerHTML = PLAN.map(p=>
+  `<h2>${p.ph} <span class="num" style="font-weight:400;color:var(--ink-3);font-size:15px">${p.dates}</span></h2>
+   ${p.note?`<p class="muted">${p.note}</p>`:''}
+   <div class="scroll"><table>${p.rows.map(r=>`<tr><td class="n" style="width:96px"><b>${r[0]}</b></td><td>${r[1]}</td></tr>`).join('')}</table></div>
+   ${p.mocks?`<p class="muted"><b>${p.mocks}</b></p>`:''}
+   ${p.mile?`<div class="card R"><p style="margin:0"><b>${p.mile}</b></p></div>`:''}`).join('');
+
+/* ============ log ============ */
+async function mkSave(){
+  const r={d:document.getElementById('mkDate').value||'—',
+    L:+document.getElementById('mkL').value||0,R:+document.getElementById('mkR').value||0,
+    S:+document.getElementById('mkS').value||0,W:+document.getElementById('mkW').value||0};
+  if(!r.L&&!r.R&&!r.S&&!r.W) return;
+  const all=await get('mocks',[]); all.push(r); await put('mocks',all);
+  ['mkDate','mkL','mkR','mkS','mkW'].forEach(i=>document.getElementById(i).value='');
+  drawMocks();
+}
+async function drawMocks(){
+  const all=await get('mocks',[]);
+  if(all.length){ const l=all[all.length-1]; current={L:l.L||88,R:l.R||70,S:l.S||90,W:l.W||79}; drawRail(); }
+  document.getElementById('mkList').innerHTML = all.length ?
+   `<div class="scroll"><table><tr><th>Date</th><th>L</th><th>R</th><th>S</th><th>W</th><th>Lowest = CLB</th></tr>`+
+   all.map(r=>{
+     const clb = k=>{const t={L:[82,89],R:[78,88],S:[84,89],W:[88,90]}[k];
+       return r[k]>=t[1]?10:(r[k]>=t[0]?9:8);};
+     const low=Math.min(clb('L'),clb('R'),clb('S'),clb('W'));
+     return `<tr><td>${r.d}</td><td class="n">${r.L}</td><td class="n">${r.R}</td><td class="n">${r.S}</td><td class="n">${r.W}</td><td class="n"><b>${low}</b></td></tr>`;
+   }).join('')+'</table></div>' : '<p class="muted">No mocks logged. The rail shows your April 2024 baseline.</p>';
+}
+async function erSave(){
+  const e={t:document.getElementById('erTask').value,
+    c:document.getElementById('erClass').value.split(' — ')[0],
+    w:document.getElementById('erWhat').value,
+    d:new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short'})};
+  if(!e.t&&!e.w) return;
+  const all=await get('errors',[]); all.unshift(e); await put('errors',all);
+  document.getElementById('erTask').value=''; document.getElementById('erWhat').value='';
+  drawErrors();
+}
+async function drawErrors(){
+  const all=await get('errors',[]);
+  const cts={};
+  all.forEach(e=>cts[e.c]=(cts[e.c]||0)+1);
+  const keys=Object.keys(cts).sort((a,b)=>cts[b]-cts[a]);
+  document.getElementById('erCounts').innerHTML = keys.length ?
+    `<div class="card"><h3 style="margin-top:0">This week's dominant class</h3>
+     <p style="margin-bottom:0">${keys.map(k=>`<span class="pill">${k} · ${cts[k]}</span>`).join('')}</p>
+     <p class="tiny" style="margin-top:9px;margin-bottom:0">Whichever class dominates gets next week's focus block.</p></div>` : '';
+  document.getElementById('erList').innerHTML = all.length ?
+    `<div class="scroll"><table><tr><th>Date</th><th>Task</th><th>What</th><th>Class</th></tr>`+
+    all.slice(0,40).map(e=>`<tr><td class="n">${e.d}</td><td>${e.t}</td><td>${e.w}</td><td>${e.c}</td></tr>`).join('')+
+    '</table></div>' : '<p class="muted">No entries yet.</p>';
+}
+
+/* ============ init ============ */
+drawRail(); drawToday(); fibSet('A'); wfdNext(); roLoad(0);
+swtLoad(0); sstLoad(0); drawColl(''); drawMocks(); drawErrors();
+</script>
